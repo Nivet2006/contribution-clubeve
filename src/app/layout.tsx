@@ -3,7 +3,7 @@ import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 
 export const metadata: Metadata = {
-  title: 'Secure Focus Mode & Integrity System | ClubEve',
+  title: 'Club-Eve | Secure Focus Mode & Integrity Platform',
   description: 'Mandatory Focus Mode and anti-cheating integrity monitoring platform for active contribution rounds.',
 };
 
@@ -13,8 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+    <html lang="en">
+      <body className="bg-white text-slate-900 min-h-screen flex flex-col selection:bg-[#003C5E] selection:text-white">
         <Navbar />
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {children}

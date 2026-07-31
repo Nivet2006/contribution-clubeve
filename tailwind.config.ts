@@ -9,34 +9,37 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-        brand: {
-          50: '#f0f4ff',
-          100: '#e0e9ff',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          900: '#1e1b4b',
+        peacock: {
+          DEFAULT: '#003C5E',
+          50: '#e6f4fb',
+          100: '#b8e3f6',
+          500: '#0070aa',
+          800: '#003C5E',
+          900: '#00253b',
         },
-        integrity: {
-          safe: '#10b981',
-          warning: '#f59e0b',
-          violated: '#ef4444',
-          critical: '#dc2626',
-        }
+        emeraldClub: {
+          DEFAULT: '#007F6E',
+          50: '#e6f7f4',
+          100: '#b8ebe3',
+          500: '#007F6E',
+          800: '#005247',
+        },
+        golden: {
+          DEFAULT: '#FFB703',
+          400: '#ffc833',
+          500: '#FFB703',
+          600: '#cc9200',
+        },
+        sunset: {
+          DEFAULT: '#E85D04',
+          500: '#E85D04',
+          600: '#ba4a03',
+        },
+        midnight: '#0D0D0F',
+        surfaceDark: '#15171A',
+        cardDark: '#1A1D22',
+        ivory: '#F8F7F2',
       },
-      animation: {
-        'pulse-subtle': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'radar': 'radar 2s linear infinite',
-      },
-      keyframes: {
-        radar: {
-          '0%': { transform: 'scale(0.95)', opacity: '0.8' },
-          '50%': { transform: 'scale(1.05)', opacity: '0.4' },
-          '100%': { transform: 'scale(0.95)', opacity: '0.8' },
-        }
-      }
     },
   },
   plugins: [],

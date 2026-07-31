@@ -34,32 +34,32 @@ export default function ViolationToast({
 
   return (
     <div className="fixed top-20 right-6 z-50 max-w-md w-full animate-bounce-short">
-      <div className="bg-slate-900/95 border-2 border-amber-500/60 rounded-2xl p-4 shadow-2xl shadow-amber-950/40 text-white backdrop-blur-xl flex items-start space-x-3">
+      <div className="bg-white border-2 border-black rounded-2xl p-4 shadow-2xl text-slate-900 flex items-start space-x-3">
         
-        <div className="p-2 bg-amber-500/20 text-amber-400 rounded-xl shrink-0 mt-0.5 border border-amber-500/30">
+        <div className="p-2 bg-amber-100 text-[#E85D04] rounded-xl shrink-0 mt-0.5 border border-amber-300">
           <AlertCircle className="w-5 h-5" />
         </div>
 
         <div className="flex-1 space-y-1">
           <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold text-amber-400 tracking-wide uppercase">
+            <h4 className="text-xs font-bold text-[#E85D04] tracking-wide uppercase font-mono">
               {toast.title}
             </h4>
-            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300">
               Violation {violationCount} / {maxViolations}
             </span>
           </div>
 
-          <p className="text-xs text-slate-200">{toast.detail}</p>
+          <p className="text-xs text-slate-900 font-semibold">{toast.detail}</p>
           
-          <p className="text-[10px] text-slate-400 italic">
+          <p className="text-[10px] text-slate-500 italic font-mono font-medium">
             Automated Draft Saved. Exceeding {maxViolations} violations forces auto-submission.
           </p>
         </div>
 
         <button
           onClick={onDismiss}
-          className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors"
+          className="text-slate-500 hover:text-slate-900 p-1 rounded-lg transition-colors"
         >
           <X className="w-4 h-4" />
         </button>

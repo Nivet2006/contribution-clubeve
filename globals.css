@@ -1,26 +1,17 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* ── The 1% Club / Club-Eve STRICT LIGHT THEME Design System ── */
+/* ── The 1% Club Design System Variables ── */
 :root {
   --primary-peacock: #003C5E;
   --secondary-emerald: #007F6E;
-  --accent-golden: #D97706;
+  --accent-golden: #FFB703;
   --cta-sunset: #E85D04;
-
-  --bg: #ffffff;
-  --bg-subtle: #f8fafc;
-  --bg-card: #ffffff;
-  --bg-hover: #f1f5f9;
-  --fg: #0a0a0a;
-  --fg-muted: #475569;
-  --fg-faint: #94a3b8;
-  --border: #e2e8f0;
-  --border-strong: #0a0a0a;
-  --accent: #003C5E;
-  --accent-fg: #ffffff;
-
-  --grid-color: rgba(0, 0, 0, 0.08);
-  --grid-color-2: rgba(0, 0, 0, 0.03);
+  --bg-midnight: #0D0D0F;
+  --surface-dark: #15171A;
+  --card-dark: #1A1D22;
+  --text-ivory: #F8F7F2;
 }
 
 /* 1% Club Gradient Utilities */
@@ -29,7 +20,7 @@
 }
 
 .bg-gradient-luxury-gold {
-  background: linear-gradient(135deg, #B45309 0%, #D97706 100%);
+  background: linear-gradient(135deg, #8A5A00 0%, #FFB703 100%);
 }
 
 .bg-gradient-twilight-horizon {
@@ -37,27 +28,7 @@
 }
 
 .bg-gradient-subtle-glow {
-  background: linear-gradient(180deg, #e6f7f4 0%, #ffffff 100%);
-}
-
-/* Secret Access Denied Animation Effects */
-@keyframes shakeEffect {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-10px); }
-  40%, 80% { transform: translateX(10px); }
-}
-
-@keyframes fadeFlashEffect {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.2; background-color: #E85D04; }
-}
-
-.access-denied-shake {
-  animation: shakeEffect 0.5s ease-in-out;
-}
-
-.access-denied-fade {
-  animation: fadeFlashEffect 0.8s ease-in-out;
+  background: linear-gradient(180deg, #007F6E 0%, #0D0D0F 100%);
 }
 
 @media print {
@@ -83,24 +54,51 @@ html {
   scroll-behavior: smooth;
 }
 
+:root {
+  --bg: #ffffff;
+  --bg-subtle: #f5f5f5;
+  --bg-card: #ffffff;
+  --bg-hover: #f2f2f2;
+  --fg: #0a0a0a;
+  --fg-muted: #555555;
+  --fg-faint: #999999;
+  --border: #e0e0e0;
+  --border-strong: #b0b0b0;
+  --accent: #0a0a0a;
+  --accent-fg: #ffffff;
+}
+
+[data-theme="dark"] {
+  --bg: #0D0D0F;
+  --bg-subtle: #15171A;
+  --bg-card: #1A1D22;
+  --bg-hover: #22252A;
+  --fg: #F8F7F2;
+  --fg-muted: #B8BEC6;
+  --fg-faint: #6B7280;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --accent: #FFB703;
+  --accent-fg: #0D0D0F;
+}
+
 * {
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
-  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background-color: #ffffff;
-  color: #0a0a0a;
+  background-color: var(--bg);
+  color: var(--fg);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-  overflow-x: hidden;
+  transition: opacity 1.2s cubic-bezier(0.19, 1, 0.22, 1), filter 1.2s cubic-bezier(0.19, 1, 0.22, 1), background-color 0.2s ease;
 }
 
 h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
   font-weight: 900;
   letter-spacing: -0.04em;
   text-transform: uppercase;
   line-height: 0.95;
-  color: #0a0a0a;
 }
 
 /* Never filter images */
@@ -110,6 +108,15 @@ img {
 }
 
 /* ── Background Pattern Tokens & CSS ── */
+:root {
+  --grid-color: rgba(0, 0, 0, 0.12);
+  --grid-color-2: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] {
+  --grid-color: rgba(255, 255, 255, 0.08);
+  --grid-color-2: rgba(255, 255, 255, 0.03);
+}
 
 /* 1. None */
 [data-pattern="none"] html,
@@ -119,8 +126,7 @@ img {
 
 /* 2. Grid (Default) */
 [data-pattern="grid"] html,
-[data-pattern="grid"] body,
-html, body {
+[data-pattern="grid"] body {
   background-image:
     linear-gradient(var(--grid-color) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
@@ -150,7 +156,7 @@ html, body {
   background-attachment: fixed !important;
 }
 
-/* 5. Diagonal Lines */
+/* 5. Lines / Diagonal */
 [data-pattern="diagonal"] html,
 [data-pattern="diagonal"] body {
   background-image: repeating-linear-gradient(45deg, var(--grid-color) 0, var(--grid-color) 1px, transparent 0, transparent 24px) !important;
@@ -175,7 +181,18 @@ html, body {
   background-attachment: fixed !important;
 }
 
-/* 8. Circuit */
+/* 8. Diamonds */
+[data-pattern="diamonds"] html,
+[data-pattern="diamonds"] body {
+  background-image:
+    linear-gradient(45deg, var(--grid-color) 25%, transparent 25%, transparent 75%, var(--grid-color) 75%),
+    linear-gradient(-45deg, var(--grid-color) 25%, transparent 25%, transparent 75%, var(--grid-color) 75%) !important;
+  background-size: 36px 36px !important;
+  background-position: 0 0, 18px 0 !important;
+  background-attachment: fixed !important;
+}
+
+/* 9. Circuit */
 [data-pattern="circuit"] html,
 [data-pattern="circuit"] body {
   background-image:
@@ -186,27 +203,54 @@ html, body {
   background-attachment: fixed !important;
 }
 
-/* Custom scrollbar */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 9999px;
-  border: 1px solid #94a3b8;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #007F6E;
+/* 10. Polka */
+[data-pattern="polka"] html,
+[data-pattern="polka"] body {
+  background-image:
+    radial-gradient(var(--grid-color) 3px, transparent 3px),
+    radial-gradient(var(--grid-color) 3px, transparent 3px) !important;
+  background-size: 32px 32px !important;
+  background-position: 0 0, 16px 16px !important;
+  background-attachment: fixed !important;
 }
 
-/* Disable text selection class when configurable */
-.user-select-none {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+/* 11. Scales */
+[data-pattern="scales"] html,
+[data-pattern="scales"] body {
+  background-image: radial-gradient(circle at 50% 0, transparent 40%, var(--grid-color) 41%, var(--grid-color) 45%, transparent 46%) !important;
+  background-size: 32px 32px !important;
+  background-attachment: fixed !important;
+}
+
+/* 12. Zigzag */
+[data-pattern="zigzag"] html,
+[data-pattern="zigzag"] body {
+  background-image:
+    linear-gradient(135deg, var(--grid-color) 25%, transparent 25%),
+    linear-gradient(225deg, var(--grid-color) 25%, transparent 25%) !important;
+  background-size: 24px 24px !important;
+  background-attachment: fixed !important;
+}
+
+/* Mobile Touch Optimizations */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 767px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { FocusConfig, Submission } from '@/types/focus';
 import ContributorAuditModal from './ContributorAuditModal';
 import AdminConfigPanel from './AdminConfigPanel';
+import BrandMark from '@/components/common/BrandMark';
 import { ShieldCheck, ShieldAlert, Search, Filter, Download, Sliders, Eye, RefreshCw, AlertTriangle, Users, FileCheck, Award } from 'lucide-react';
 
 interface IntegrityDashboardProps {
@@ -27,7 +28,6 @@ export default function IntegrityDashboard({
   // Compute Metrics
   const totalSubmissions = submissions.length;
   const autoSubmittedCount = submissions.filter((s) => s.status === 'AUTO_SUBMITTED').length;
-  const manualSubmittedCount = submissions.filter((s) => s.status === 'MANUAL_SUBMITTED').length;
   const avgFocusScore = totalSubmissions > 0
     ? Math.round(submissions.reduce((acc, s) => acc + s.focusScore, 0) / totalSubmissions)
     : 100;
@@ -74,102 +74,103 @@ export default function IntegrityDashboard({
     <div className="space-y-8">
       
       {/* Top Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border-2 border-black p-8 rounded-[2.5rem] shadow-sm text-slate-900">
         <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-emerald-500 p-0.5 shadow-lg shadow-indigo-500/20">
-            <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-              <ShieldCheck className="w-6 h-6 text-emerald-400" />
-            </div>
+          <div className="w-12 h-12 rounded-2xl bg-[#003C5E] p-0.5 shadow-md flex items-center justify-center">
+            <ShieldCheck className="w-6 h-6 text-[#FFB703]" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-white tracking-tight">Admin Integrity Dashboard</h1>
-            <p className="text-xs text-slate-400">Real-time focus violation tracking & submission audit logs</p>
+            <div className="flex items-center space-x-3">
+              <h1 className="text-2xl font-black text-[#0a0a0a] tracking-tight uppercase">Admin Integrity Portal</h1>
+              <BrandMark role="admin" />
+            </div>
+            <p className="text-xs text-slate-600 font-mono mt-1 font-semibold">Real-time focus violation tracking & submission audit logs</p>
           </div>
         </div>
 
         <div className="flex items-center space-x-3">
           <button
             onClick={onRefreshData}
-            className="flex items-center space-x-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold transition-colors"
+            className="flex items-center space-x-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-colors"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            <span>Sync Latest Data</span>
+            <span>Sync Data</span>
           </button>
 
           <button
             onClick={exportAllCSV}
-            className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/20 transition-colors"
+            className="flex items-center space-x-2 px-5 py-2.5 bg-[#E85D04] hover:bg-[#ba4a03] text-white rounded-xl text-xs font-mono font-bold uppercase tracking-wider shadow-sm transition-colors"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Export CSV Audit</span>
+            <span>Export CSV</span>
           </button>
         </div>
       </div>
 
       {/* KPI Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg space-y-2">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-xs font-medium uppercase tracking-wider">Total Submissions</span>
-            <Users className="w-4 h-4 text-indigo-400" />
+        <div className="bg-white border-2 border-black p-6 rounded-3xl shadow-sm space-y-2">
+          <div className="flex items-center justify-between text-slate-600">
+            <span className="text-xs font-mono uppercase tracking-widest font-bold">Total Submissions</span>
+            <Users className="w-4 h-4 text-[#003C5E]" />
           </div>
-          <p className="text-3xl font-black text-white font-mono">{totalSubmissions}</p>
-          <p className="text-[11px] text-slate-400">Active contributor sessions</p>
+          <p className="text-3xl font-black text-slate-900 font-mono">{totalSubmissions}</p>
+          <p className="text-[11px] text-slate-600 font-mono font-medium">Active evaluation sessions</p>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg space-y-2">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-xs font-medium uppercase tracking-wider">Auto-Submitted</span>
-            <ShieldAlert className="w-4 h-4 text-rose-400" />
+        <div className="bg-white border-2 border-black p-6 rounded-3xl shadow-sm space-y-2">
+          <div className="flex items-center justify-between text-slate-600">
+            <span className="text-xs font-mono uppercase tracking-widest font-bold">Auto-Submitted</span>
+            <ShieldAlert className="w-4 h-4 text-[#E85D04]" />
           </div>
-          <p className="text-3xl font-black text-rose-400 font-mono">{autoSubmittedCount}</p>
-          <p className="text-[11px] text-rose-300/80 font-medium">Focus mode violations threshold exceeded</p>
+          <p className="text-3xl font-black text-[#E85D04] font-mono">{autoSubmittedCount}</p>
+          <p className="text-[11px] text-[#E85D04] font-mono font-bold">Violations limit exceeded</p>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg space-y-2">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-xs font-medium uppercase tracking-wider">Average Focus Score</span>
-            <Award className="w-4 h-4 text-emerald-400" />
+        <div className="bg-white border-2 border-black p-6 rounded-3xl shadow-sm space-y-2">
+          <div className="flex items-center justify-between text-slate-600">
+            <span className="text-xs font-mono uppercase tracking-widest font-bold">Average Focus</span>
+            <Award className="w-4 h-4 text-[#007F6E]" />
           </div>
-          <p className={`text-3xl font-black font-mono ${avgFocusScore >= 80 ? 'text-emerald-400' : 'text-amber-400'}`}>
+          <p className={`text-3xl font-black font-mono ${avgFocusScore >= 80 ? 'text-[#007F6E]' : 'text-[#D97706]'}`}>
             {avgFocusScore}%
           </p>
-          <p className="text-[11px] text-slate-400">Aggregated session focus metric</p>
+          <p className="text-[11px] text-slate-600 font-mono font-medium">Aggregated integrity score</p>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg space-y-2">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-xs font-medium uppercase tracking-wider">Violations Logged</span>
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
+        <div className="bg-white border-2 border-black p-6 rounded-3xl shadow-sm space-y-2">
+          <div className="flex items-center justify-between text-slate-600">
+            <span className="text-xs font-mono uppercase tracking-widest font-bold">Violations Logged</span>
+            <AlertTriangle className="w-4 h-4 text-[#D97706]" />
           </div>
-          <p className="text-3xl font-black text-amber-400 font-mono">{totalViolations}</p>
-          <p className="text-[11px] text-slate-400">Total detected anti-cheat events</p>
+          <p className="text-3xl font-black text-[#D97706] font-mono">{totalViolations}</p>
+          <p className="text-[11px] text-slate-600 font-mono font-medium">Anti-cheat events intercepted</p>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex items-center space-x-3 border-b border-slate-800 pb-3">
+      <div className="flex items-center space-x-3 border-b-2 border-slate-200 pb-3">
         <button
           onClick={() => setActiveTab('submissions')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all ${
             activeTab === 'submissions'
-              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-              : 'text-slate-400 hover:text-white hover:bg-slate-900'
+              ? 'bg-[#003C5E] text-white shadow-sm'
+              : 'text-slate-600 hover:text-black hover:bg-slate-100'
           }`}
         >
-          <FileCheck className="w-4 h-4" />
-          <span>Submissions Integrity Audit ({filteredSubmissions.length})</span>
+          <FileCheck className="w-4 h-4 text-[#FFB703]" />
+          <span>Submissions Audit ({filteredSubmissions.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('config')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all ${
             activeTab === 'config'
-              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-              : 'text-slate-400 hover:text-white hover:bg-slate-900'
+              ? 'bg-[#003C5E] text-white shadow-sm'
+              : 'text-slate-600 hover:text-black hover:bg-slate-100'
           }`}
         >
-          <Sliders className="w-4 h-4" />
+          <Sliders className="w-4 h-4 text-[#FFB703]" />
           <span>Security Rules & Thresholds</span>
         </button>
       </div>
@@ -182,13 +183,13 @@ export default function IntegrityDashboard({
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             
             <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+              <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search contributor name, email, or round..."
+                placeholder="Search contributor, email, or round..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-white border-2 border-slate-300 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black font-semibold"
               />
             </div>
 
@@ -197,9 +198,9 @@ export default function IntegrityDashboard({
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+                className="bg-white border-2 border-slate-300 rounded-xl px-3 py-2 text-xs font-mono text-slate-900 font-bold focus:outline-none focus:border-black"
               >
-                <option value="ALL">All Submission Types</option>
+                <option value="ALL">All Submissions</option>
                 <option value="MANUAL_SUBMITTED">Manual Submissions</option>
                 <option value="AUTO_SUBMITTED">Auto-Submitted (Violations)</option>
               </select>
@@ -208,10 +209,10 @@ export default function IntegrityDashboard({
           </div>
 
           {/* Submissions Table */}
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+          <div className="bg-white border-2 border-black rounded-[2.5rem] overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-300">
-                <thead className="bg-slate-950 text-slate-400 font-mono uppercase tracking-wider text-[10px] border-b border-slate-800">
+              <table className="w-full text-left text-xs text-slate-900">
+                <thead className="bg-slate-100 text-slate-700 font-mono uppercase tracking-widest text-[10px] border-b-2 border-black">
                   <tr>
                     <th className="py-4 px-6">Contributor</th>
                     <th className="py-4 px-6">Round Title</th>
@@ -223,10 +224,10 @@ export default function IntegrityDashboard({
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-slate-800/60">
+                <tbody className="divide-y divide-slate-200">
                   {filteredSubmissions.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-8 text-center text-slate-500 font-mono">
+                      <td colSpan={7} className="py-8 text-center text-slate-500 font-mono font-bold">
                         No submission logs found matching search criteria.
                       </td>
                     </tr>
@@ -234,27 +235,27 @@ export default function IntegrityDashboard({
                     filteredSubmissions.map((sub) => {
                       const isAuto = sub.status === 'AUTO_SUBMITTED';
                       return (
-                        <tr key={sub.id} className="hover:bg-slate-950/40 transition-colors">
+                        <tr key={sub.id} className="hover:bg-slate-50 transition-colors">
                           
                           {/* Contributor */}
                           <td className="py-4 px-6">
-                            <div className="font-bold text-white">{sub.contributorName}</div>
-                            <div className="text-[11px] text-slate-400">{sub.contributorEmail}</div>
+                            <div className="font-bold text-slate-900 font-sans">{sub.contributorName}</div>
+                            <div className="text-[11px] text-slate-500 font-mono font-semibold">{sub.contributorEmail}</div>
                           </td>
 
                           {/* Round */}
                           <td className="py-4 px-6">
-                            <div className="font-medium text-slate-200">{sub.roundTitle}</div>
-                            <div className="text-[10px] text-slate-500 font-mono">ID: {sub.roundId}</div>
+                            <div className="font-bold text-slate-900">{sub.roundTitle}</div>
+                            <div className="text-[10px] text-slate-500 font-mono font-semibold">ID: {sub.roundId}</div>
                           </td>
 
                           {/* Status */}
                           <td className="py-4 px-6">
                             <span
-                              className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border ${
+                              className={`rounded-full font-mono text-[10px] uppercase tracking-widest px-3 py-1 border font-bold ${
                                 isAuto
-                                  ? 'bg-rose-500/20 text-rose-300 border-rose-500/30'
-                                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                                  ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                               }`}
                             >
                               {isAuto ? 'AUTO SUBMITTED' : 'MANUAL'}
@@ -265,7 +266,7 @@ export default function IntegrityDashboard({
                           <td className="py-4 px-6">
                             <span
                               className={`font-mono font-bold ${
-                                sub.violationCount > 0 ? 'text-rose-400' : 'text-emerald-400'
+                                sub.violationCount > 0 ? 'text-[#E85D04]' : 'text-[#007F6E]'
                               }`}
                             >
                               {sub.violationCount} Violations
@@ -275,12 +276,12 @@ export default function IntegrityDashboard({
                           {/* Focus Score */}
                           <td className="py-4 px-6">
                             <span
-                              className={`font-mono font-bold px-2 py-0.5 rounded-lg ${
+                              className={`font-mono font-bold px-2.5 py-1 rounded-lg ${
                                 sub.focusScore >= 80
-                                  ? 'bg-emerald-500/10 text-emerald-400'
+                                  ? 'bg-emerald-100 text-emerald-800'
                                   : sub.focusScore >= 50
-                                  ? 'bg-amber-500/10 text-amber-400'
-                                  : 'bg-rose-500/10 text-rose-400'
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : 'bg-rose-100 text-rose-800'
                               }`}
                             >
                               {sub.focusScore}%
@@ -289,17 +290,17 @@ export default function IntegrityDashboard({
 
                           {/* Device & OS */}
                           <td className="py-4 px-6">
-                            <div className="text-slate-300">{sub.device.browser}</div>
-                            <div className="text-[10px] text-slate-500">{sub.device.os}</div>
+                            <div className="text-slate-900 font-mono text-[11px] font-bold">{sub.device.browser}</div>
+                            <div className="text-[10px] text-slate-500 font-mono font-medium">{sub.device.os}</div>
                           </td>
 
                           {/* Actions */}
                           <td className="py-4 px-6 text-right">
                             <button
                               onClick={() => setSelectedSubmission(sub)}
-                              className="px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white rounded-xl text-xs font-semibold transition-all border border-indigo-500/30 flex items-center space-x-1.5 ml-auto"
+                              className="px-3.5 py-1.5 bg-[#003C5E] hover:bg-[#00253b] text-white rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all flex items-center space-x-1.5 ml-auto shadow-sm"
                             >
-                              <Eye className="w-3.5 h-3.5" />
+                              <Eye className="w-3.5 h-3.5 text-[#FFB703]" />
                               <span>Audit Details</span>
                             </button>
                           </td>
