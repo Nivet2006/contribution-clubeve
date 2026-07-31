@@ -59,6 +59,8 @@ export interface Submission {
   finalSaveTime?: number;
 }
 
+export type RoundStatus = 'ACTIVE' | 'CLOSED' | 'HIDDEN';
+
 export interface Question {
   id: string;
   title: string;
@@ -76,4 +78,7 @@ export interface Round {
   durationMinutes: number;
   totalQuestions: number;
   questions: Question[];
+  status: RoundStatus;
+  createdAt: number;
+  createdBy: string;
 }

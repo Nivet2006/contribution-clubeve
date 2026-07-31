@@ -195,42 +195,42 @@ export default function RoundPage() {
       )}
 
       {/* Round Header Bar */}
-      <div className="bg-white border-2 border-black rounded-[2rem] p-4 sm:p-6 shadow-sm flex flex-wrap items-center justify-between gap-4 text-slate-900">
+      <div className="bg-[#15171A] border-2 border-slate-800 rounded-[2rem] p-4 sm:p-6 shadow-sm flex flex-wrap items-center justify-between gap-4 text-white">
         
         {/* Title & Contributor */}
         <div>
           <div className="flex items-center space-x-3">
-            <h2 className="text-lg font-black text-[#0a0a0a] tracking-tight uppercase">{round.title}</h2>
-            <span className="px-3 py-1 rounded-full font-mono text-[10px] uppercase tracking-widest bg-slate-100 text-[#003C5E] border border-slate-300 font-bold">
+            <h2 className="text-lg font-black text-white tracking-tight uppercase">{round.title}</h2>
+            <span className="px-3 py-1 rounded-full font-mono text-[10px] uppercase tracking-widest bg-slate-800 text-[#FFB703] border border-slate-700 font-bold">
               Question {currentQuestionIndex + 1}/{round.totalQuestions}
             </span>
           </div>
-          <p className="text-xs text-slate-600 font-mono mt-1 font-semibold">Contributor: {contributorName} ({contributorEmail})</p>
+          <p className="text-xs text-white/80 font-mono mt-1 font-semibold">Contributor: {contributorName} ({contributorEmail})</p>
         </div>
 
         {/* Live Status Indicators */}
         <div className="flex flex-wrap items-center gap-3 text-xs font-mono font-bold">
           
           {/* Fullscreen Badge */}
-          <div className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border ${isFullscreen ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-rose-50 text-rose-800 border-rose-300'}`}>
+          <div className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border ${isFullscreen ? 'bg-emerald-950/80 text-emerald-300 border-emerald-800' : 'bg-rose-950/80 text-rose-300 border-rose-800'}`}>
             <Maximize2 className="w-3.5 h-3.5" />
             <span>{isFullscreen ? 'FULLSCREEN ACTIVE' : 'FULLSCREEN EXITED'}</span>
           </div>
 
           {/* Auto-Save Status */}
-          <div className="flex items-center space-x-1.5 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-300 text-slate-800">
+          <div className="flex items-center space-x-1.5 bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700 text-white">
             <Save className={`w-3.5 h-3.5 ${isSaving ? 'text-[#D97706] animate-spin' : 'text-[#007F6E]'}`} />
             <span>{isSaving ? 'Saving...' : `Last saved ${secondsAgo}s ago`}</span>
           </div>
 
           {/* Violations Counter */}
-          <div className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border ${violationCount > 0 ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-slate-100 text-slate-700 border-slate-300'}`}>
+          <div className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border ${violationCount > 0 ? 'bg-amber-950/80 text-amber-300 border-amber-800' : 'bg-slate-800 text-white/80 border-slate-700'}`}>
             <AlertTriangle className="w-3.5 h-3.5" />
             <span>Violations: {violationCount}/{adminConfig.maxViolations}</span>
           </div>
 
           {/* Timer Countdown */}
-          <div className="flex items-center space-x-1.5 bg-[#003C5E] text-white border border-black px-3.5 py-1.5 rounded-xl">
+          <div className="flex items-center space-x-1.5 bg-[#003C5E] text-white border border-slate-700 px-3.5 py-1.5 rounded-xl">
             <Clock className="w-3.5 h-3.5 text-[#FFB703]" />
             <span>{formatTimer(remainingSeconds)}</span>
           </div>
@@ -253,8 +253,8 @@ export default function RoundPage() {
       />
 
       {/* Footer Submit Button */}
-      <div className="flex items-center justify-between bg-white border-2 border-black p-5 rounded-2xl">
-        <span className="text-xs text-slate-600 font-mono font-bold">
+      <div className="flex items-center justify-between bg-[#15171A] border-2 border-slate-800 p-5 rounded-2xl">
+        <span className="text-xs text-white/80 font-mono font-bold">
           Focus Mode Integrity Monitoring active on all inputs.
         </span>
 

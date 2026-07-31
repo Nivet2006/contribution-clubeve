@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import BrandMark from '@/components/common/BrandMark';
-import { ShieldCheck, UserCheck, Eye, Layers } from 'lucide-react';
+import { UserCheck, Eye, Layers } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -34,21 +35,15 @@ export default function Navbar() {
         {/* Brand Header */}
         <div className="flex items-center space-x-4">
           <Link href="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 rounded-xl bg-[#003C5E] p-0.5 shadow-md group-hover:scale-105 transition-transform flex items-center justify-center">
-              <ShieldCheck className="w-6 h-6 text-[#FFB703]" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="font-black text-lg tracking-tight text-[#0a0a0a]">
-                  CLUB-EVE
-                </span>
-                <span className="px-2 py-0.5 text-[10px] font-mono font-bold tracking-widest uppercase bg-[#007F6E]/10 text-[#007F6E] border border-[#007F6E]/30 rounded-full">
-                  1% CLUB
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-500 hidden sm:block font-mono tracking-tighter">
-                SECURE FOCUS & INTEGRITY PLATFORM
-              </p>
+            <div className="h-10 w-auto group-hover:scale-105 transition-transform flex items-center justify-center">
+              <Image
+                src="/logo.png"
+                alt="Club-Eve Logo"
+                width={120}
+                height={40}
+                className="h-10 w-auto object-contain"
+                priority
+              />
             </div>
           </Link>
 

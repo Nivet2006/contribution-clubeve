@@ -34,9 +34,9 @@ export default function ViolationToast({
 
   return (
     <div className="fixed top-20 right-6 z-50 max-w-md w-full animate-bounce-short">
-      <div className="bg-white border-2 border-black rounded-2xl p-4 shadow-2xl text-slate-900 flex items-start space-x-3">
+      <div className="bg-[#15171A] border-2 border-slate-700 rounded-2xl p-4 shadow-2xl text-white flex items-start space-x-3">
         
-        <div className="p-2 bg-amber-100 text-[#E85D04] rounded-xl shrink-0 mt-0.5 border border-amber-300">
+        <div className="p-2 bg-amber-950/80 text-[#E85D04] rounded-xl shrink-0 mt-0.5 border border-amber-800">
           <AlertCircle className="w-5 h-5" />
         </div>
 
@@ -45,21 +45,21 @@ export default function ViolationToast({
             <h4 className="text-xs font-bold text-[#E85D04] tracking-wide uppercase font-mono">
               {toast.title}
             </h4>
-            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300">
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-950/80 text-rose-300 border border-rose-800">
               Violation {violationCount} / {maxViolations}
             </span>
           </div>
 
-          <p className="text-xs text-slate-900 font-semibold">{toast.detail}</p>
+          <p className="text-xs text-white font-semibold">{toast.detail}</p>
           
-          <p className="text-[10px] text-slate-500 italic font-mono font-medium">
+          <p className="text-[10px] text-white/70 italic font-mono font-medium">
             Automated Draft Saved. Exceeding {maxViolations} violations forces auto-submission.
           </p>
         </div>
 
         <button
           onClick={onDismiss}
-          className="text-slate-500 hover:text-slate-900 p-1 rounded-lg transition-colors"
+          className="text-white/60 hover:text-white p-1 rounded-lg transition-colors"
         >
           <X className="w-4 h-4" />
         </button>

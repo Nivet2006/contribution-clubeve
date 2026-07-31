@@ -3,17 +3,20 @@ import {
   doc,
   setDoc,
   getDocs,
+  deleteDoc,
   onSnapshot,
   query,
   orderBy,
+  where,
   Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { FocusConfig, Submission, ViolationLog } from '@/types/focus';
+import { FocusConfig, Round, RoundStatus, Submission, ViolationLog } from '@/types/focus';
 
 const SUBMISSIONS_COLLECTION = 'submissions';
 const CONFIG_COLLECTION = 'admin_config';
 const DRAFTS_COLLECTION = 'drafts';
+const ROUNDS_COLLECTION = 'rounds';
 
 // 1. Save Submission to Firestore
 export async function saveSubmissionToFirestore(submission: Submission): Promise<boolean> {
@@ -113,3 +116,84 @@ export function subscribeToConfig(
     return () => {};
   }
 }
+
+// ── ROUND MANAGEMENT ──────────────────────────────────────────────────────────
+
+// 6. Create or Update a Round in Firestore
+export async function saveRoundToFirestore(round: Round): Promise<boolean> {
+  try {
+    const docRef = doc(db, ROUNDS_COLLECTION, round.id);
+    await setDoc(docRef, { ...round, updatedAt: Timestamp.now() });
+    return true;
+  } catch (err) {
+    console.warn('Firestore round save error:', err);
+    return false;
+  }
+}
+
+// 7. Update only specific fields on a Round (e.g. status)
+export async function updateRoundInFirestore(
+  roundId: string,
+  partial: Partial<Round>
+): Promise<boolean> {
+  try {
+    const docRef = doc(db, ROUNDS_COLLECTION, roundId);
+    await setDoc(docRef, { ...partial, updatedAt: Timestamp.now() }, { merge: true });
+    return true;
+  } catch (err) {
+    console.warn('Firestore round update error:', err);
+    return false;
+  }
+}
+
+// 8. Delete a Round from Firestore
+export async function deleteRoundFromFirestore(roundId: string): Promise<boolean> {
+  try {
+    await deleteDoc(doc(db, ROUNDS_COLLECTION, roundId));
+    return true;
+  } catch (err) {
+    console.warn('Firestore round delete error:', err);
+    return false;
+  }
+}
+
+// 9. Real-time subscription to ALL rounds (admin only)
+export function subscribeToRounds(
+  onUpdate: (rounds: Round[]) => void
+): () => void {
+  try {
+    const q = query(collection(db, ROUNDS_COLLECTION), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const list: Round[] = [];
+        snapshot.forEach((docSnap) => list.push(docSnap.data() as Round));
+        onUpdate(list);
+      },
+      (err) => console.warn('Firestore rounds subscription error:', err)
+    );
+    return unsubscribe;
+  } catch (err) {
+    console.warn('Could not attach rounds listener:', err);
+    return () => {};
+  }
+}
+
+// 10. Fetch public rounds for contributor homepage (ACTIVE + CLOSED only, NOT HIDDEN)
+export async function fetchPublicRounds(): Promise<Round[]> {
+  try {
+    const q = query(
+      collection(db, ROUNDS_COLLECTION),
+      where('status', 'in', ['ACTIVE', 'CLOSED']),
+      orderBy('createdAt', 'desc')
+    );
+    const snapshot = await getDocs(q);
+    const list: Round[] = [];
+    snapshot.forEach((docSnap) => list.push(docSnap.data() as Round));
+    return list;
+  } catch (err) {
+    console.warn('fetchPublicRounds error:', err);
+    return [];
+  }
+}
+
