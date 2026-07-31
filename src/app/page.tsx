@@ -3,55 +3,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { SAMPLE_ROUNDS } from '@/lib/storage';
-import BrandMark from '@/components/common/BrandMark';
-import { ShieldCheck, Play, Lock, Eye, Monitor, Cpu, Sparkles } from 'lucide-react';
+import { Play, Sparkles } from 'lucide-react';
 
 export default function HomePage() {
   return (
-    <div className="space-y-12 py-4">
+    <div className="space-y-8 py-4">
       
-      {/* Hero Header in Light Brutalist Ocean Depth Gradient */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#003C5E] via-[#005247] to-[#007F6E] border-2 border-black rounded-[2.5rem] p-8 sm:p-12 shadow-md text-white">
-        <div className="relative z-10 max-w-3xl space-y-6">
-          
-          <div className="flex items-center space-x-3">
-            <span className="px-3 py-1 bg-white/10 text-[#FFB703] border border-white/20 rounded-full font-mono text-[10px] uppercase tracking-widest font-bold">
-              THE 1% CLUB • FOCUS MODE
-            </span>
-            <BrandMark />
-          </div>
-
-          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase leading-none">
-            Secure Contribution Rounds & Real-Time Integrity Guard
-          </h1>
-
-          <p className="text-sm sm:text-base text-slate-100 leading-relaxed font-sans font-medium">
-            Welcome to the Club-Eve evaluation ecosystem. All active contribution rounds enforce mandatory browser-level Focus Mode. Progress is continuously backed up locally while window presence, tab switches, and security shortcuts are audited in real time.
-          </p>
-
-          {/* Quick System Diagnostics Bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-xs">
-            <div className="bg-white/10 p-3 rounded-2xl border border-white/20 flex items-center space-x-2">
-              <Monitor className="w-4 h-4 text-[#FFB703] shrink-0" />
-              <span className="text-white font-mono text-[11px] font-bold">Fullscreen Lock</span>
-            </div>
-            <div className="bg-white/10 p-3 rounded-2xl border border-white/20 flex items-center space-x-2">
-              <Cpu className="w-4 h-4 text-emerald-300 shrink-0" />
-              <span className="text-white font-mono text-[11px] font-bold">5s Auto-Save</span>
-            </div>
-            <div className="bg-white/10 p-3 rounded-2xl border border-white/20 flex items-center space-x-2">
-              <Lock className="w-4 h-4 text-amber-300 shrink-0" />
-              <span className="text-white font-mono text-[11px] font-bold">Anti-Cheat</span>
-            </div>
-            <div className="bg-white/10 p-3 rounded-2xl border border-white/20 flex items-center space-x-2">
-              <Eye className="w-4 h-4 text-[#FFB703] shrink-0" />
-              <span className="text-white font-mono text-[11px] font-bold">Admin Stream</span>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
       {/* Evaluation Rounds Catalog */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
