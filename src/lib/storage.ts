@@ -17,6 +17,9 @@ export const SAMPLE_ROUNDS: Round[] = [
     category: 'System Architecture',
     durationMinutes: 30,
     totalQuestions: 3,
+    status: 'ACTIVE',
+    createdAt: 1720000000000,
+    createdBy: 'system',
     questions: [
       {
         id: 'q1',
@@ -58,6 +61,9 @@ export function handleFullscreenExit(
     category: 'Web Engineering',
     durationMinutes: 20,
     totalQuestions: 2,
+    status: 'ACTIVE',
+    createdAt: 1720000001000,
+    createdBy: 'system',
     questions: [
       {
         id: 'q1',
@@ -81,6 +87,7 @@ export function handleFullscreenExit(
     ],
   },
 ];
+
 
 // Initial mock submissions for Admin Dashboard testing
 export const INITIAL_SUBMISSIONS: Submission[] = [

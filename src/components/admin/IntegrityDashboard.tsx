@@ -1,15 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FocusConfig, Submission } from '@/types/focus';
-import ContributorAuditModal from './ContributorAuditModal';
+import { FocusConfig, Submission, Round } from '@/types/focus';
+import SubmissionExportPanel from './SubmissionExportPanel';
 import AdminConfigPanel from './AdminConfigPanel';
+import RoundManagerPanel from './RoundManagerPanel';
 import BrandMark from '@/components/common/BrandMark';
-import { ShieldCheck, ShieldAlert, Search, Filter, Download, Sliders, Eye, RefreshCw, AlertTriangle, Users, FileCheck, Award } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Search, Filter, Download, Sliders, Eye, RefreshCw, AlertTriangle, Users, FileCheck, Award, Layers } from 'lucide-react';
 
 interface IntegrityDashboardProps {
   submissions: Submission[];
   config: FocusConfig;
+  rounds: Round[];
+  adminEmail: string;
   onSaveConfig: (cfg: FocusConfig) => void;
   onRefreshData: () => void;
 }
@@ -17,13 +20,16 @@ interface IntegrityDashboardProps {
 export default function IntegrityDashboard({
   submissions,
   config,
+  rounds,
+  adminEmail,
   onSaveConfig,
   onRefreshData,
 }: IntegrityDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'submissions' | 'config'>('submissions');
+  const [activeTab, setActiveTab] = useState<'submissions' | 'rounds' | 'config'>('submissions');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'MANUAL_SUBMITTED' | 'AUTO_SUBMITTED'>('ALL');
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+  const selectedRound = selectedSubmission ? rounds.find((r) => r.id === selectedSubmission.roundId) || null : null;
 
   // Compute Metrics
   const totalSubmissions = submissions.length;
@@ -160,6 +166,18 @@ export default function IntegrityDashboard({
         >
           <FileCheck className="w-4 h-4 text-[#FFB703]" />
           <span>Submissions Audit ({filteredSubmissions.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('rounds')}
+          className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all ${
+            activeTab === 'rounds'
+              ? 'bg-[#003C5E] text-white shadow-sm'
+              : 'text-slate-600 hover:text-black hover:bg-slate-100'
+          }`}
+        >
+          <Layers className="w-4 h-4 text-[#FFB703]" />
+          <span>Manage Rounds ({rounds.length})</span>
         </button>
 
         <button
@@ -317,14 +335,24 @@ export default function IntegrityDashboard({
         </div>
       )}
 
-      {/* Tab Content 2: Security Configuration */}
+      {/* Tab Content 2: Rounds Manager */}
+      {activeTab === 'rounds' && (
+        <RoundManagerPanel
+          rounds={rounds}
+          adminEmail={adminEmail}
+          onRoundsUpdated={onRefreshData}
+        />
+      )}
+
+      {/* Tab Content 3: Security Configuration */}
       {activeTab === 'config' && (
         <AdminConfigPanel config={config} onSaveConfig={onSaveConfig} />
       )}
 
-      {/* Contributor Integrity Audit Drawer/Modal */}
-      <ContributorAuditModal
+      {/* Submission Export Panel */}
+      <SubmissionExportPanel
         submission={selectedSubmission}
+        round={selectedRound}
         onClose={() => setSelectedSubmission(null)}
       />
 
