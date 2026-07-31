@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { saveDraft, DraftState } from '@/lib/storage';
 
 export function useAutoSave(
@@ -10,14 +10,19 @@ export function useAutoSave(
   const [lastSavedTime, setLastSavedTime] = useState<number>(Date.now());
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const stateRef = useRef(stateToSave);
+  const isSessionActiveRef = useRef(isSessionActive);
 
-  // Keep stateRef fresh
+  // Keep refs fresh
   useEffect(() => {
     stateRef.current = stateToSave;
   }, [stateToSave]);
 
-  const performSave = () => {
-    if (!isSessionActive) return;
+  useEffect(() => {
+    isSessionActiveRef.current = isSessionActive;
+  }, [isSessionActive]);
+
+  const performSave = useCallback(() => {
+    if (!isSessionActiveRef.current) return;
     setIsSaving(true);
     const now = Date.now();
     saveDraft(roundId, {
@@ -26,7 +31,7 @@ export function useAutoSave(
     });
     setLastSavedTime(now);
     setTimeout(() => setIsSaving(false), 400);
-  };
+  }, [roundId]);
 
   // Periodic Auto Save
   useEffect(() => {
@@ -37,7 +42,7 @@ export function useAutoSave(
     }, intervalMs);
 
     return () => clearInterval(timer);
-  }, [roundId, intervalSeconds, isSessionActive]);
+  }, [roundId, intervalSeconds, isSessionActive, performSave]);
 
   return {
     lastSavedTime,

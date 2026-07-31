@@ -24,10 +24,13 @@ export function useFocusMonitor({
   const [isOnline, setIsOnline] = useState<boolean>(true);
   const [devToolsSuspected, setDevToolsSuspected] = useState<boolean>(false);
 
+  // Stable references for callbacks & props to prevent infinite re-render loops
   const isActiveRef = useRef(isActive);
   const configRef = useRef(config);
   const violationsRef = useRef(violations);
-  const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const onAutoSaveRef = useRef(onAutoSave);
+  const onAutoSubmitRef = useRef(onAutoSubmit);
+  const isFullscreenRef = useRef(isFullscreen);
 
   useEffect(() => {
     isActiveRef.current = isActive;
@@ -41,71 +44,86 @@ export function useFocusMonitor({
     violationsRef.current = violations;
   }, [violations]);
 
-  // Log a violation
-  const addViolation = useCallback(
-    (type: ViolationType, detail: string) => {
-      if (!isActiveRef.current) return;
+  useEffect(() => {
+    onAutoSaveRef.current = onAutoSave;
+  }, [onAutoSave]);
 
-      const severity = getSeverityForViolation(type);
-      const newLog: ViolationLog = {
-        id: 'v_' + Math.random().toString(36).substring(2, 9),
-        timestamp: Date.now(),
-        type,
-        severity,
-        detail,
-      };
+  useEffect(() => {
+    onAutoSubmitRef.current = onAutoSubmit;
+  }, [onAutoSubmit]);
 
-      const updated = [...violationsRef.current, newLog];
-      setViolations(updated);
-      violationsRef.current = updated;
+  useEffect(() => {
+    isFullscreenRef.current = isFullscreen;
+  }, [isFullscreen]);
 
-      // Show Toast Notification
-      setLatestToast({
-        id: newLog.id,
-        title: getTitleForViolation(type),
-        detail,
-        severity,
-      });
+  // Completely STABLE addViolation function with 0 changing dependencies
+  const addViolation = useCallback((type: ViolationType, detail: string) => {
+    if (!isActiveRef.current) return;
 
-      // Force Auto Save on violation
-      onAutoSave();
+    const severity = getSeverityForViolation(type);
+    const newLog: ViolationLog = {
+      id: 'v_' + Math.random().toString(36).substring(2, 9),
+      timestamp: Date.now(),
+      type,
+      severity,
+      detail,
+    };
 
-      // Check max violations threshold
-      if (updated.length >= configRef.current.maxViolations) {
-        onAutoSubmit(`Exceeded Maximum Focus Mode Violations (${updated.length} / ${configRef.current.maxViolations})`);
+    const updated = [...violationsRef.current, newLog];
+    setViolations(updated);
+    violationsRef.current = updated;
+
+    // Show Toast Notification
+    setLatestToast({
+      id: newLog.id,
+      title: getTitleForViolation(type),
+      detail,
+      severity,
+    });
+
+    // Force Auto Save on violation
+    if (onAutoSaveRef.current) {
+      onAutoSaveRef.current();
+    }
+
+    // Check max violations threshold
+    if (updated.length >= configRef.current.maxViolations) {
+      if (onAutoSubmitRef.current) {
+        onAutoSubmitRef.current(`Exceeded Maximum Focus Mode Violations (${updated.length} / ${configRef.current.maxViolations})`);
       }
-    },
-    [onAutoSave, onAutoSubmit]
-  );
+    }
+  }, []);
 
   // 1. Fullscreen monitoring
   useEffect(() => {
     if (typeof document === 'undefined' || !isActive) return;
 
-    const handleFullscreenChange = () => {
+    const syncFullscreenState = () => {
       const isFS = Boolean(document.fullscreenElement);
-      setIsFullscreen(isFS);
+      if (isFS !== isFullscreenRef.current) {
+        setIsFullscreen(isFS);
+        isFullscreenRef.current = isFS;
 
-      if (!isFS && isActiveRef.current) {
-        addViolation('FULLSCREEN_EXIT', 'Contributor exited fullscreen mode');
-        
-        // Start Countdown Timer if not already counting down
-        setFullscreenCountdown(configRef.current.fullscreenCountdownSeconds);
-      } else if (isFS) {
-        // Re-entered fullscreen
-        setFullscreenCountdown(null);
-        if (countdownTimerRef.current) {
-          clearInterval(countdownTimerRef.current);
-          countdownTimerRef.current = null;
+        if (!isFS && isActiveRef.current) {
+          addViolation('FULLSCREEN_EXIT', 'Contributor exited fullscreen mode');
+          setFullscreenCountdown(configRef.current.fullscreenCountdownSeconds);
+        } else if (isFS) {
+          setFullscreenCountdown(null);
         }
       }
     };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener('fullscreenchange', syncFullscreenState);
+    
+    // Check initial state without unconditional setState loop
+    const initialFS = Boolean(document.fullscreenElement);
+    if (initialFS !== isFullscreenRef.current) {
+      setIsFullscreen(initialFS);
+      isFullscreenRef.current = initialFS;
+    }
 
     return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('fullscreenchange', syncFullscreenState);
     };
   }, [isActive, addViolation]);
 
@@ -114,7 +132,9 @@ export function useFocusMonitor({
     if (fullscreenCountdown === null || !isActive) return;
 
     if (fullscreenCountdown <= 0) {
-      onAutoSubmit('Focus Mode Violated: Failed to return to Full Screen before countdown expired.');
+      if (onAutoSubmitRef.current) {
+        onAutoSubmitRef.current('Focus Mode Violated: Failed to return to Full Screen before countdown expired.');
+      }
       setFullscreenCountdown(null);
       return;
     }
@@ -124,7 +144,7 @@ export function useFocusMonitor({
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [fullscreenCountdown, isActive, onAutoSubmit]);
+  }, [fullscreenCountdown, isActive]);
 
   // 2. Tab Switch & Visibility Change
   useEffect(() => {
@@ -252,7 +272,7 @@ export function useFocusMonitor({
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (!isActiveRef.current) return;
-      onAutoSave();
+      if (onAutoSaveRef.current) onAutoSaveRef.current();
       e.preventDefault();
       e.returnValue = 'Focus Mode is Active. Leaving or refreshing will log an integrity violation.';
       return e.returnValue;
@@ -272,7 +292,7 @@ export function useFocusMonitor({
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [isActive, onAutoSave, addViolation]);
+  }, [isActive, addViolation]);
 
   // 9. Network Status (Online / Offline)
   useEffect(() => {
