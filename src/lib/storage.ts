@@ -1,5 +1,10 @@
 import { FocusConfig, Round, Submission, ViolationLog } from '@/types/focus';
-import { DEFAULT_FOCUS_CONFIG, calculateFocusScore, getDeviceInfo } from './focus-engine';
+import { DEFAULT_FOCUS_CONFIG } from './focus-engine';
+import {
+  saveSubmissionToFirestore,
+  saveDraftToFirestore,
+  saveConfigToFirestore,
+} from './firestore-service';
 
 const DRAFT_PREFIX = 'focus_draft_';
 const SUBMISSIONS_KEY = 'focus_admin_submissions';
@@ -161,6 +166,7 @@ export function saveDraft(roundId: string, state: DraftState) {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(DRAFT_PREFIX + roundId, JSON.stringify(state));
+    saveDraftToFirestore(roundId, state);
   } catch (err) {
     console.error('Failed to save local draft:', err);
   }
@@ -199,7 +205,6 @@ export function getSubmissions(): Submission[] {
 export function saveSubmission(submission: Submission) {
   if (typeof window === 'undefined') return;
   const current = getSubmissions();
-  // Check if existing sub exists to update or push new
   const index = current.findIndex((s) => s.id === submission.id);
   if (index >= 0) {
     current[index] = submission;
@@ -207,6 +212,9 @@ export function saveSubmission(submission: Submission) {
     current.unshift(submission);
   }
   localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(current));
+  
+  // Sync to Firebase Firestore cloud database
+  saveSubmissionToFirestore(submission);
 }
 
 export function getAdminConfig(): FocusConfig {
@@ -226,4 +234,5 @@ export function getAdminConfig(): FocusConfig {
 export function saveAdminConfig(config: FocusConfig) {
   if (typeof window === 'undefined') return;
   localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
+  saveConfigToFirestore(config);
 }
