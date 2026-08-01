@@ -208,14 +208,15 @@ export function subscribeToRounds(
 // 10. Fetch public rounds for contributor homepage (ACTIVE only)
 export async function fetchPublicRounds(): Promise<Round[]> {
   try {
-    const q = query(
-      collection(db, ROUNDS_COLLECTION),
-      where('status', '==', 'ACTIVE'),
-      orderBy('createdAt', 'desc')
-    );
+    const q = query(collection(db, ROUNDS_COLLECTION), orderBy('createdAt', 'desc'));
     const snapshot = await getDocs(q);
     const list: Round[] = [];
-    snapshot.forEach((docSnap) => list.push(docSnap.data() as Round));
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data() as Round;
+      if (data.status === 'ACTIVE') {
+        list.push(data);
+      }
+    });
     return list;
   } catch (err) {
     console.warn('fetchPublicRounds error:', err);
@@ -228,16 +229,17 @@ export function subscribeToPublicRounds(
   onUpdate: (rounds: Round[]) => void
 ): () => void {
   try {
-    const q = query(
-      collection(db, ROUNDS_COLLECTION),
-      where('status', '==', 'ACTIVE'),
-      orderBy('createdAt', 'desc')
-    );
+    const q = query(collection(db, ROUNDS_COLLECTION), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
         const list: Round[] = [];
-        snapshot.forEach((docSnap) => list.push(docSnap.data() as Round));
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data() as Round;
+          if (data.status === 'ACTIVE') {
+            list.push(data);
+          }
+        });
         onUpdate(list);
       },
       (err) => console.warn('Firestore public rounds subscription error:', err)
