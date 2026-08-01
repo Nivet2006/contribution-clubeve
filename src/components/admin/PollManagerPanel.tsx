@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Poll } from '@/types/focus';
-import { updatePollInFirestore, deletePollFromFirestore } from '@/lib/firestore-service';
+import { apiUpdatePoll, apiDeletePoll } from '@/lib/admin-api';
 import CreatePollModal from './CreatePollModal';
 import { Plus, Eye, Lock, Trash2, Share2, Check, RefreshCw, BarChart2, Users, CheckCircle, X, PieChart } from 'lucide-react';
 
@@ -23,14 +23,14 @@ export default function PollManagerPanel({ polls, adminEmail, onPollsUpdated }: 
   const handleToggleStatus = async (poll: Poll) => {
     const nextStatus = poll.status === 'ACTIVE' ? 'CLOSED' : 'ACTIVE';
     setToggling(poll.id);
-    await updatePollInFirestore(poll.id, { status: nextStatus });
+    await apiUpdatePoll(poll.id, { status: nextStatus });
     setToggling(null);
     onPollsUpdated();
   };
 
   const handleDelete = async (pollId: string) => {
     setDeleting(pollId);
-    await deletePollFromFirestore(pollId);
+    await apiDeletePoll(pollId);
     setDeleting(null);
     setConfirmDelete(null);
     onPollsUpdated();

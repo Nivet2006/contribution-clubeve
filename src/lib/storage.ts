@@ -3,8 +3,8 @@ import { DEFAULT_FOCUS_CONFIG } from './focus-engine';
 import {
   saveSubmissionToFirestore,
   saveDraftToFirestore,
-  saveConfigToFirestore,
 } from './firestore-service';
+import { apiSaveConfig } from './admin-api';
 
 const DRAFT_PREFIX = 'focus_draft_';
 const SUBMISSIONS_KEY = 'focus_admin_submissions';
@@ -253,5 +253,5 @@ export function getAdminConfig(): FocusConfig {
 export function saveAdminConfig(config: FocusConfig) {
   if (typeof window === 'undefined') return;
   localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
-  saveConfigToFirestore(config);
+  apiSaveConfig(config);
 }

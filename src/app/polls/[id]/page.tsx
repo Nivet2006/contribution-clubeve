@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, useRef, use } from 'react';
 import Link from 'next/link';
 import { getPollById, recordVoteInFirestore } from '@/lib/firestore-service';
+import { ensureAnonymousAuth } from '@/lib/firebase';
+import { BotShield } from '@/lib/bot-shield';
 import { Poll } from '@/types/focus';
 import BrandMark from '@/components/common/BrandMark';
 import { BarChart2, CheckCircle2, ShieldCheck, RefreshCw, AlertTriangle, ArrowLeft, Check, Lock } from 'lucide-react';
@@ -24,32 +26,30 @@ export default function PollDetailPage({ params }: PageProps) {
   const [error, setError] = useState<string | null>(null);
 
   const [voterToken, setVoterToken] = useState<string>('');
+  const [honeypotValue, setHoneypotValue] = useState<string>('');
+  const botShieldRef = useRef<BotShield | null>(null);
 
   useEffect(() => {
     if (!pollId) return;
 
-    // Generate or retrieve persistent hardware/browser fingerprint token
-    let token = '';
-    if (typeof window !== 'undefined') {
-      token = localStorage.getItem('voter_fingerprint_id') || '';
-      if (!token) {
-        const screenStr = `${window.screen.width}x${window.screen.height}_${window.screen.colorDepth}`;
-        const navStr = `${navigator.userAgent}_${navigator.language}_${new Date().getTimezoneOffset()}`;
-        // Create deterministic hash from browser/device attributes
-        let hash = 0;
-        const combined = screenStr + navStr + Math.random().toString(36);
-        for (let i = 0; i < combined.length; i++) {
-          hash = (hash << 5) - hash + combined.charCodeAt(i);
-          hash |= 0;
-        }
-        token = 'dev_' + Math.abs(hash).toString(36) + '_' + Date.now().toString(36);
-        localStorage.setItem('voter_fingerprint_id', token);
-      }
-      setVoterToken(token);
+    // Initialize invisible anti-bot protection
+    const shield = new BotShield();
+    shield.init();
+    botShieldRef.current = shield;
 
-      const votedKey = `voted_poll_${pollId}`;
-      if (localStorage.getItem(votedKey)) {
-        setHasVoted(true);
+    // Sign in anonymously to get a stable Firebase UID for vote enforcement
+    async function initAuth() {
+      const uid = await ensureAnonymousAuth();
+      if (uid) {
+        setVoterToken(uid);
+      }
+
+      // Check localStorage as a fast UI hint (actual enforcement is in Firestore rules)
+      if (typeof window !== 'undefined') {
+        const votedKey = `voted_poll_${pollId}`;
+        if (localStorage.getItem(votedKey)) {
+          setHasVoted(true);
+        }
       }
     }
 
@@ -60,8 +60,14 @@ export default function PollDetailPage({ params }: PageProps) {
       setLoading(false);
     }
 
+    initAuth();
     loadPoll();
+
+    return () => {
+      shield.destroy();
+    };
   }, [pollId]);
+
 
   const handleSelectOption = (questionId: string, optionId: string) => {
     if (hasVoted) return;
@@ -72,6 +78,16 @@ export default function PollDetailPage({ params }: PageProps) {
     if (!poll || hasVoted) return;
     setError(null);
 
+    // Anti-bot validation (invisible to real users)
+    if (botShieldRef.current) {
+      botShieldRef.current.setHoneypotValue(honeypotValue);
+      const botCheck = botShieldRef.current.validate();
+      if (!botCheck.passed) {
+        setError('Unable to verify your vote. Please try again.');
+        return;
+      }
+    }
+
     // Ensure user answered all questions in poll
     for (const q of poll.questions) {
       if (!userAnswers[q.id]) {
@@ -80,8 +96,13 @@ export default function PollDetailPage({ params }: PageProps) {
       }
     }
 
+    if (!voterToken) {
+      setError('Authentication not ready. Please wait a moment and try again.');
+      return;
+    }
+
     setSubmittingVote(true);
-    const res = await recordVoteInFirestore(poll.id, voterToken || 'anon_voter', userAnswers);
+    const res = await recordVoteInFirestore(poll.id, voterToken, userAnswers);
     setSubmittingVote(false);
 
     if (res.success) {
@@ -254,6 +275,17 @@ export default function PollDetailPage({ params }: PageProps) {
       {/* Vote Action */}
       {!hasVoted && (
         <div className="bg-white border-2 border-black rounded-[2.5rem] p-6 text-center space-y-3 shadow-sm">
+          {/* Honeypot field — invisible to humans, auto-filled by bots */}
+          <input
+            type="text"
+            name="website"
+            autoComplete="off"
+            tabIndex={-1}
+            value={honeypotValue}
+            onChange={(e) => setHoneypotValue(e.target.value)}
+            aria-hidden="true"
+            style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, width: 0, overflow: 'hidden' }}
+          />
           <button
             type="button"
             disabled={submittingVote}

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Round, RoundStatus } from '@/types/focus';
-import { updateRoundInFirestore, deleteRoundFromFirestore } from '@/lib/firestore-service';
+import { apiSaveRound, apiDeleteRound } from '@/lib/admin-api';
 import CreateRoundModal from './CreateRoundModal';
 import { Plus, Eye, EyeOff, Lock, Trash2, ChevronDown, RefreshCw, Clock, HelpCircle, Share2, Check, ShieldAlert, X } from 'lucide-react';
 
@@ -52,7 +52,7 @@ export default function RoundManagerPanel({ rounds, adminEmail, onRoundsUpdated 
   const handleStatusCycle = async (round: Round) => {
     const next = STATUS_CYCLE[round.status];
     setToggling(round.id);
-    await updateRoundInFirestore(round.id, { status: next });
+    await apiSaveRound({ ...round, status: next });
     setToggling(null);
     onRoundsUpdated();
   };
@@ -68,7 +68,7 @@ export default function RoundManagerPanel({ rounds, adminEmail, onRoundsUpdated 
     setOtpPasswordError(null);
     const newRequireOtp = !(otpModalRound.requireOtp !== false);
 
-    await updateRoundInFirestore(otpModalRound.id, { requireOtp: newRequireOtp });
+    await apiSaveRound({ ...otpModalRound, requireOtp: newRequireOtp });
     setUpdatingOtp(false);
     setOtpModalRound(null);
     setOtpPassword('');
@@ -77,7 +77,7 @@ export default function RoundManagerPanel({ rounds, adminEmail, onRoundsUpdated 
 
   const handleDelete = async (roundId: string) => {
     setDeleting(roundId);
-    await deleteRoundFromFirestore(roundId);
+    await apiDeleteRound(roundId);
     setDeleting(null);
     setConfirmDelete(null);
     onRoundsUpdated();

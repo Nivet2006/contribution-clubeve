@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Round, Question, RoundStatus, MCQOption } from '@/types/focus';
-import { saveRoundToFirestore } from '@/lib/firestore-service';
+import { apiSaveRound } from '@/lib/admin-api';
 import { compressImage } from '@/lib/image-compressor';
 import { X, Plus, Trash2, ChevronRight, ChevronLeft, Check, Code, FileText, CheckSquare, Upload, Image as ImageIcon } from 'lucide-react';
 
@@ -151,9 +151,9 @@ export default function CreateRoundModal({ adminEmail, onClose, onSaved }: Props
       createdBy: adminEmail,
     };
 
-    const ok = await saveRoundToFirestore(round);
+    const result = await apiSaveRound(round);
     setSaving(false);
-    if (!ok) { setError('Failed to save round to Firestore. Check your connection.'); return; }
+    if (!result.success) { setError(result.message || 'Failed to save round. Check your connection.'); return; }
     onSaved(round);
     onClose();
   };

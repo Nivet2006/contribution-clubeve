@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { loadDraft, saveSubmission, getAdminConfig } from '@/lib/storage';
 import { getRoundById } from '@/lib/firestore-service';
+import { ensureAnonymousAuth } from '@/lib/firebase';
 import { FocusConfig, Round, Submission, ViolationLog } from '@/types/focus';
 import { getDeviceInfo, calculateFocusScore } from '@/lib/focus-engine';
 
@@ -42,6 +43,7 @@ export default function RoundPage() {
   useEffect(() => {
     async function fetchRound() {
       if (!roundId) return;
+      ensureAnonymousAuth();
       setLoadingRound(true);
       const data = await getRoundById(roundId);
       if (data) {

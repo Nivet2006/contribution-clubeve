@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Submission, Poll, PollQuestion, PollOption } from '@/types/focus';
-import { savePollToFirestore } from '@/lib/firestore-service';
+import { apiSavePoll } from '@/lib/admin-api';
 import { compressImage } from '@/lib/image-compressor';
 import { X, Plus, Trash2, Upload, AlertCircle } from 'lucide-react';
 
@@ -166,11 +166,11 @@ export default function CreatePollModal({
       createdBy: adminEmail,
     };
 
-    const ok = await savePollToFirestore(newPoll);
+    const result = await apiSavePoll(newPoll);
     setSaving(false);
 
-    if (!ok) {
-      setError('Failed to publish poll to Firestore.');
+    if (!result.success) {
+      setError(result.message || 'Failed to publish poll.');
       return;
     }
 

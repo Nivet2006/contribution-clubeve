@@ -6,7 +6,7 @@ import RoundManagerPanel from './RoundManagerPanel';
 import PollManagerPanel from './PollManagerPanel';
 import CreatePollModal from './CreatePollModal';
 import BrandMark from '@/components/common/BrandMark';
-import { deleteSubmissionsFromFirestore, purgeAllSubmissionsFromFirestore } from '@/lib/firestore-service';
+import { apiDeleteSubmissions } from '@/lib/admin-api';
 import { deleteSelectedSubmissions, clearAllSubmissions } from '@/lib/storage';
 import { ShieldCheck, ShieldAlert, Search, Filter, Download, Sliders, Eye, RefreshCw, AlertTriangle, Users, FileCheck, Award, Layers, Trash2, CheckSquare, Square, Lock, X, BarChart2, Plus, CheckCircle } from 'lucide-react';
 
@@ -138,7 +138,7 @@ export default function IntegrityDashboard({
     setPurging(true);
     setPurgeError(null);
     deleteSelectedSubmissions(selectedIds);
-    await deleteSubmissionsFromFirestore(selectedIds);
+    await apiDeleteSubmissions(selectedIds);
     setPurging(false);
     setShowPurgeModal(false);
     setPurgePassword('');
