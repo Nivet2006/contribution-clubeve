@@ -249,28 +249,19 @@ export default function PreFlightModal({
             )}
           </div>
 
-          {/* System Diagnostics */}
-          <div className="grid grid-cols-3 gap-3 text-xs">
-            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex items-center space-x-2">
-              <Monitor className="w-4 h-4 text-[#007F6E]" />
-              <div>
-                <p className="font-bold text-slate-900 font-mono text-[11px]">Fullscreen API</p>
-                <p className="text-[10px] text-[#007F6E] font-mono font-bold">Ready</p>
-              </div>
+          {/* System Diagnostics Badges */}
+          <div className="grid grid-cols-3 gap-3 text-xs font-mono font-bold">
+            <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center justify-center space-x-2 text-[#007F6E]">
+              <Monitor className="w-4 h-4 shrink-0" />
+              <span className="text-[11px] uppercase tracking-wider">Fullscreen Ready</span>
             </div>
-            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex items-center space-x-2">
-              <Cpu className="w-4 h-4 text-[#D97706]" />
-              <div>
-                <p className="font-bold text-slate-900 font-mono text-[11px]">Local Backup</p>
-                <p className="text-[10px] text-[#D97706] font-mono font-bold">Auto-Save 5s</p>
-              </div>
+            <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center justify-center space-x-2 text-[#D97706]">
+              <Cpu className="w-4 h-4 shrink-0" />
+              <span className="text-[11px] uppercase tracking-wider">Auto-Save 5s</span>
             </div>
-            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex items-center space-x-2">
-              <Wifi className="w-4 h-4 text-[#007F6E]" />
-              <div>
-                <p className="font-bold text-slate-900 font-mono text-[11px]">Network State</p>
-                <p className="text-[10px] text-[#007F6E] font-mono font-bold">Online Sync</p>
-              </div>
+            <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center justify-center space-x-2 text-[#007F6E]">
+              <Wifi className="w-4 h-4 shrink-0" />
+              <span className="text-[11px] uppercase tracking-wider">System Online</span>
             </div>
           </div>
 
