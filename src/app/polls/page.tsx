@@ -67,8 +67,8 @@ export default function PollsPage() {
                     <span>OPEN FOR VOTING</span>
                   </span>
                   <span className="text-[11px] font-mono font-bold text-slate-500 flex items-center space-x-1">
-                    <Users className="w-3.5 h-3.5 text-[#003C5E]" />
-                    <span>{poll.totalVotes || 0} Votes Recorded</span>
+                    <CheckCircle className="w-3.5 h-3.5 text-[#007F6E]" />
+                    <span>Anonymous Poll</span>
                   </span>
                 </div>
 

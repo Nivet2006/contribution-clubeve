@@ -201,14 +201,6 @@ export default function PollDetailPage({ params }: PageProps) {
                           : 'border-slate-200 bg-white hover:border-black cursor-pointer'
                       }`}
                     >
-                      {/* Live Vote Percentage Fill Bar (If voted) */}
-                      {hasVoted && (
-                        <div
-                          className="absolute left-0 top-0 bottom-0 bg-[#003C5E]/10 transition-all duration-500"
-                          style={{ width: `${votePct}%` }}
-                        />
-                      )}
-
                       <div className="relative z-10 flex items-start justify-between gap-3">
                         <div className="flex items-start space-x-3 flex-1">
                           <span
@@ -234,17 +226,13 @@ export default function PollDetailPage({ params }: PageProps) {
                           </div>
                         </div>
 
-                        {/* Selection status or percentage */}
+                        {/* Selection check indicator */}
                         <div className="shrink-0 text-right">
-                          {hasVoted ? (
-                            <span className="text-xs font-mono font-bold text-[#003C5E]">
-                              {votePct}% ({opt.voteCount || 0})
-                            </span>
-                          ) : isSelected ? (
+                          {isSelected && (
                             <span className="w-5 h-5 rounded-full bg-[#003C5E] text-white flex items-center justify-center">
                               <Check className="w-3.5 h-3.5" />
                             </span>
-                          ) : null}
+                          )}
                         </div>
                       </div>
                     </div>

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Poll } from '@/types/focus';
 import { updatePollInFirestore, deletePollFromFirestore } from '@/lib/firestore-service';
 import CreatePollModal from './CreatePollModal';
-import { Plus, Eye, Lock, Trash2, Share2, Check, RefreshCw, BarChart2, Users, CheckCircle } from 'lucide-react';
+import { Plus, Eye, Lock, Trash2, Share2, Check, RefreshCw, BarChart2, Users, CheckCircle, X, PieChart } from 'lucide-react';
 
 interface Props {
   polls: Poll[];
@@ -14,6 +14,7 @@ interface Props {
 
 export default function PollManagerPanel({ polls, adminEmail, onPollsUpdated }: Props) {
   const [showCreate, setShowCreate] = useState(false);
+  const [viewResultsPoll, setViewResultsPoll] = useState<Poll | null>(null);
   const [toggling, setToggling] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -120,6 +121,16 @@ export default function PollManagerPanel({ polls, adminEmail, onPollsUpdated }: 
                     <td className="py-4 px-5 text-right">
                       <div className="flex items-center justify-end space-x-2">
                         
+                        {/* View Results (Admin Only) */}
+                        <button
+                          onClick={() => setViewResultsPoll(poll)}
+                          className="flex items-center space-x-1 px-3 py-1.5 bg-[#003C5E] hover:bg-[#00253b] text-white rounded-xl text-[10px] font-mono font-bold uppercase transition-all shadow-sm"
+                          title="View confidential live poll results"
+                        >
+                          <PieChart className="w-3.5 h-3.5 text-[#FFB703]" />
+                          <span>View Results</span>
+                        </button>
+
                         {/* Share Direct Poll Link */}
                         <button
                           onClick={() => {
@@ -195,6 +206,86 @@ export default function PollManagerPanel({ polls, adminEmail, onPollsUpdated }: 
             onPollsUpdated();
           }}
         />
+      )}
+
+      {/* Confidential Admin Results Modal */}
+      {viewResultsPoll && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="w-full max-w-2xl bg-white border-2 border-black rounded-[2.5rem] p-6 space-y-6 shadow-2xl overflow-hidden text-slate-900 my-6">
+            
+            <div className="flex items-center justify-between border-b-2 border-slate-100 pb-4">
+              <div>
+                <span className="text-[10px] font-mono font-bold bg-[#003C5E] text-white px-2.5 py-0.5 rounded-full uppercase">
+                  CONFIDENTIAL ADMIN REPORT
+                </span>
+                <h2 className="text-xl font-black uppercase text-slate-900 mt-1">
+                  {viewResultsPoll.title}
+                </h2>
+                <p className="text-xs font-mono text-slate-500 mt-0.5">
+                  Total Votes Recorded: <span className="font-bold text-slate-900">{viewResultsPoll.totalVotes || 0}</span>
+                </p>
+              </div>
+              <button
+                onClick={() => setViewResultsPoll(null)}
+                className="p-1.5 text-slate-400 hover:text-black rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+              {viewResultsPoll.questions.map((q, qIdx) => {
+                const totalQVotes = q.options.reduce((sum, o) => sum + (o.voteCount || 0), 0);
+
+                return (
+                  <div key={q.id} className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-5 space-y-4">
+                    <div>
+                      <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">
+                        Question {qIdx + 1} of {viewResultsPoll.questions.length}
+                      </span>
+                      <h4 className="text-sm font-black uppercase text-slate-900">{q.title}</h4>
+                    </div>
+
+                    <div className="space-y-3">
+                      {q.options.map((opt, oIdx) => {
+                        const pct = totalQVotes > 0 ? Math.round(((opt.voteCount || 0) / totalQVotes) * 100) : 0;
+
+                        return (
+                          <div key={opt.id} className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2">
+                            <div className="flex items-center justify-between text-xs font-mono font-bold">
+                              <span className="text-slate-800">
+                                Option {String.fromCharCode(65 + oIdx)}: {opt.type === 'text' ? opt.value : '[Image Option]'}
+                              </span>
+                              <span className="text-[#003C5E] font-black">{pct}% ({opt.voteCount || 0} votes)</span>
+                            </div>
+
+                            {/* Progress bar */}
+                            <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                              <div
+                                className="h-full bg-[#003C5E] transition-all duration-500"
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="border-t border-slate-200 pt-4 flex justify-end">
+              <button
+                onClick={() => setViewResultsPoll(null)}
+                className="px-5 py-2 bg-slate-900 text-white rounded-xl text-xs font-mono font-bold uppercase hover:bg-slate-800"
+              >
+                Close Report
+              </button>
+            </div>
+
+          </div>
+        </div>
       )}
 
     </div>
