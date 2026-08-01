@@ -128,10 +128,10 @@ export default function PreFlightModal({
             </div>
             <div>
               <h2 className="text-xl font-black tracking-tight uppercase text-white">
-                Focus Mode Pre-Flight Check
+                {round.title}
               </h2>
-              <p className="text-xs text-white/80 font-mono tracking-tight">
-                Mandatory integrity protocol for {round.title}
+              <p className="text-xs text-white/80 font-mono tracking-tight mt-0.5">
+                {round.category} · {round.durationMinutes} Minutes · Focus Mode Verification
               </p>
             </div>
           </div>
