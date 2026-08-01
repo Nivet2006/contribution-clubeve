@@ -5,12 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import BrandMark from '@/components/common/BrandMark';
-import { UserCheck, Eye, Layers } from 'lucide-react';
+import { UserCheck, Eye, Layers, BarChart2 } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith('/admin');
   const isRound = pathname.startsWith('/round');
+  const isPolls = pathname.startsWith('/polls');
 
   const [activePattern, setActivePattern] = useState<string>('grid');
 
@@ -82,13 +83,25 @@ export default function Navbar() {
               <Link
                 href="/"
                 className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-bold tracking-wide transition-all ${
-                  !isAdmin
+                  !isAdmin && !isPolls
                     ? 'bg-[#003C5E] text-white shadow-sm'
                     : 'text-slate-600 hover:text-black hover:bg-slate-200'
                 }`}
               >
                 <UserCheck className="w-3.5 h-3.5" />
-                <span>Contributor</span>
+                <span>Rounds</span>
+              </Link>
+
+              <Link
+                href="/polls"
+                className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-bold tracking-wide transition-all ${
+                  isPolls
+                    ? 'bg-[#003C5E] text-white shadow-sm'
+                    : 'text-slate-600 hover:text-black hover:bg-slate-200'
+                }`}
+              >
+                <BarChart2 className="w-3.5 h-3.5 text-[#FFB703]" />
+                <span>Polls</span>
               </Link>
 
               <Link
@@ -100,7 +113,7 @@ export default function Navbar() {
                 }`}
               >
                 <Eye className="w-3.5 h-3.5" />
-                <span>Admin Audit</span>
+                <span>Admin Portal</span>
               </Link>
             </div>
 

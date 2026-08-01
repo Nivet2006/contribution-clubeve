@@ -88,3 +88,36 @@ export interface Round {
   createdAt: number;
   createdBy: string;
 }
+
+export interface PollOption {
+  id: string;
+  type: 'text' | 'image';
+  value: string; // text string or compressed image data URL
+  voteCount: number;
+}
+
+export interface PollQuestion {
+  id: string;
+  title: string;
+  description?: string;
+  options: PollOption[];
+}
+
+export interface Poll {
+  id: string;
+  title: string;
+  description: string;
+  status: 'ACTIVE' | 'CLOSED';
+  questions: PollQuestion[];
+  totalVotes: number;
+  createdAt: number;
+  createdBy: string;
+}
+
+export interface PollVote {
+  id: string;
+  pollId: string;
+  voterSessionId: string;
+  answers: Record<string, string>; // questionId -> optionId
+  timestamp: number;
+}

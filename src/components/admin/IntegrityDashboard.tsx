@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
-import { FocusConfig, Submission, Round } from '@/types/focus';
+import { FocusConfig, Submission, Round, Poll } from '@/types/focus';
 import SubmissionExportPanel from './SubmissionExportPanel';
 import AdminConfigPanel from './AdminConfigPanel';
 import RoundManagerPanel from './RoundManagerPanel';
+import PollManagerPanel from './PollManagerPanel';
+import CreatePollModal from './CreatePollModal';
 import BrandMark from '@/components/common/BrandMark';
 import { deleteSubmissionsFromFirestore, purgeAllSubmissionsFromFirestore } from '@/lib/firestore-service';
 import { deleteSelectedSubmissions, clearAllSubmissions } from '@/lib/storage';
-import { ShieldCheck, ShieldAlert, Search, Filter, Download, Sliders, Eye, RefreshCw, AlertTriangle, Users, FileCheck, Award, Layers, Trash2, CheckSquare, Square, Lock, X } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Search, Filter, Download, Sliders, Eye, RefreshCw, AlertTriangle, Users, FileCheck, Award, Layers, Trash2, CheckSquare, Square, Lock, X, BarChart2, Plus } from 'lucide-react';
 
 interface IntegrityDashboardProps {
   submissions: Submission[];
   config: FocusConfig;
   rounds: Round[];
+  polls?: Poll[];
   adminEmail: string;
   onSaveConfig: (cfg: FocusConfig) => void;
   onRefreshData: () => void;
@@ -21,11 +24,13 @@ export default function IntegrityDashboard({
   submissions,
   config,
   rounds,
+  polls = [],
   adminEmail,
   onSaveConfig,
   onRefreshData,
 }: IntegrityDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'submissions' | 'rounds' | 'config'>('submissions');
+  const [activeTab, setActiveTab] = useState<'submissions' | 'rounds' | 'polls' | 'config'>('submissions');
+  const [showCreatePollModal, setShowCreatePollModal] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'MANUAL_SUBMITTED' | 'AUTO_SUBMITTED'>('ALL');
   const [roundFilter, setRoundFilter] = useState<string>('ALL');
@@ -239,6 +244,18 @@ export default function IntegrityDashboard({
         </button>
 
         <button
+          onClick={() => setActiveTab('polls')}
+          className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all ${
+            activeTab === 'polls'
+              ? 'bg-[#003C5E] text-white shadow-sm'
+              : 'text-slate-600 hover:text-black hover:bg-slate-100'
+          }`}
+        >
+          <BarChart2 className="w-4 h-4 text-[#FFB703]" />
+          <span>Community Polls ({polls.length})</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('config')}
           className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all ${
             activeTab === 'config'
@@ -318,6 +335,13 @@ export default function IntegrityDashboard({
                     <span>Export Selected</span>
                   </button>
                   <button
+                    onClick={() => setShowCreatePollModal(true)}
+                    className="flex items-center space-x-1 px-3 py-1.5 bg-[#007F6E] hover:bg-[#006255] text-white rounded-xl text-xs font-mono font-bold uppercase shadow-sm transition-all"
+                  >
+                    <BarChart2 className="w-3.5 h-3.5" />
+                    <span>Create Poll</span>
+                  </button>
+                  <button
                     onClick={() => {
                       setShowPurgeModal(true);
                       setPurgePassword('');
@@ -330,7 +354,7 @@ export default function IntegrityDashboard({
                   </button>
                 </>
               ) : (
-                <span className="text-[11px] font-mono text-slate-400 italic">Select rows to export or purge</span>
+                <span className="text-[11px] font-mono text-slate-400 italic">Select rows to export, poll, or purge</span>
               )}
             </div>
 
@@ -467,9 +491,33 @@ export default function IntegrityDashboard({
         />
       )}
 
-      {/* Tab Content 3: Security Configuration */}
+      {/* Tab Content 3: Community Polls Manager */}
+      {activeTab === 'polls' && (
+        <PollManagerPanel
+          polls={polls}
+          adminEmail={adminEmail}
+          onPollsUpdated={onRefreshData}
+        />
+      )}
+
+      {/* Tab Content 4: Security Configuration */}
       {activeTab === 'config' && (
         <AdminConfigPanel config={config} onSaveConfig={onSaveConfig} />
+      )}
+
+      {/* Create Poll Modal */}
+      {showCreatePollModal && (
+        <CreatePollModal
+          selectedSubmissions={submissions.filter((s) => selectedIds.includes(s.id))}
+          adminEmail={adminEmail}
+          onClose={() => setShowCreatePollModal(false)}
+          onSaved={() => {
+            setShowCreatePollModal(false);
+            setSelectedIds([]);
+            setActiveTab('polls');
+            onRefreshData();
+          }}
+        />
       )}
 
       {/* Submission Export Panel */}

@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { getSubmissions, getAdminConfig, saveAdminConfig } from '@/lib/storage';
-import { subscribeToSubmissions, subscribeToConfig, subscribeToRounds } from '@/lib/firestore-service';
-import { FocusConfig, Submission, Round } from '@/types/focus';
+import { subscribeToSubmissions, subscribeToConfig, subscribeToRounds, subscribeToPolls } from '@/lib/firestore-service';
+import { FocusConfig, Submission, Round, Poll } from '@/types/focus';
 import IntegrityDashboard from '@/components/admin/IntegrityDashboard';
 import AdminLoginModal from '@/components/admin/AdminLoginModal';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -15,6 +15,7 @@ export default function AdminPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [config, setConfig] = useState<FocusConfig>(getAdminConfig());
   const [rounds, setRounds] = useState<Round[]>([]);
+  const [polls, setPolls] = useState<Poll[]>([]);
 
   const refreshData = () => {
     setSubmissions(getSubmissions());
@@ -38,10 +39,15 @@ export default function AdminPage() {
       setRounds(cloudRounds);
     });
 
+    const unsubPolls = subscribeToPolls((cloudPolls) => {
+      setPolls(cloudPolls);
+    });
+
     return () => {
       unsubSubs();
       unsubConfig();
       unsubRounds();
+      unsubPolls();
     };
   }, [user]);
 
@@ -90,6 +96,7 @@ export default function AdminPage() {
         submissions={submissions}
         config={config}
         rounds={rounds}
+        polls={polls}
         adminEmail={user.email || 'admin'}
         onSaveConfig={handleSaveConfig}
         onRefreshData={refreshData}

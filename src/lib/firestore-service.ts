@@ -12,12 +12,13 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { FocusConfig, Round, RoundStatus, Submission, ViolationLog } from '@/types/focus';
+import { FocusConfig, Round, RoundStatus, Submission, ViolationLog, Poll, PollVote } from '@/types/focus';
 
 const SUBMISSIONS_COLLECTION = 'submissions';
 const CONFIG_COLLECTION = 'admin_config';
 const DRAFTS_COLLECTION = 'drafts';
 const ROUNDS_COLLECTION = 'rounds';
+const POLLS_COLLECTION = 'polls';
 
 // 1. Save Submission to Firestore
 export async function saveSubmissionToFirestore(submission: Submission): Promise<boolean> {
@@ -263,5 +264,126 @@ export async function getRoundById(roundId: string): Promise<Round | null> {
   } catch (err) {
     console.warn('getRoundById error:', err);
     return null;
+  }
+}
+
+// ── POLL MANAGEMENT & VOTING ───────────────────────────────────────────────────
+
+// 12. Save or Update a Poll
+export async function savePollToFirestore(poll: Poll): Promise<boolean> {
+  try {
+    const docRef = doc(db, POLLS_COLLECTION, poll.id);
+    await setDoc(docRef, { ...poll, updatedAt: Timestamp.now() });
+    return true;
+  } catch (err) {
+    console.warn('Firestore poll save error:', err);
+    return false;
+  }
+}
+
+// 13. Update partial fields of a Poll (e.g. status)
+export async function updatePollInFirestore(
+  pollId: string,
+  partial: Partial<Poll>
+): Promise<boolean> {
+  try {
+    const docRef = doc(db, POLLS_COLLECTION, pollId);
+    await setDoc(docRef, { ...partial, updatedAt: Timestamp.now() }, { merge: true });
+    return true;
+  } catch (err) {
+    console.warn('Firestore poll update error:', err);
+    return false;
+  }
+}
+
+// 14. Delete a Poll
+export async function deletePollFromFirestore(pollId: string): Promise<boolean> {
+  try {
+    await deleteDoc(doc(db, POLLS_COLLECTION, pollId));
+    return true;
+  } catch (err) {
+    console.warn('Firestore poll delete error:', err);
+    return false;
+  }
+}
+
+// 15. Subscribe to all Polls (Real-Time)
+export function subscribeToPolls(
+  onUpdate: (polls: Poll[]) => void
+): () => void {
+  try {
+    const q = query(collection(db, POLLS_COLLECTION), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const list: Poll[] = [];
+        snapshot.forEach((docSnap) => list.push(docSnap.data() as Poll));
+        onUpdate(list);
+      },
+      (err) => console.warn('Firestore polls subscription error:', err)
+    );
+    return unsubscribe;
+  } catch (err) {
+    console.warn('Could not attach polls listener:', err);
+    return () => {};
+  }
+}
+
+// 16. Fetch single Poll by ID
+export async function getPollById(pollId: string): Promise<Poll | null> {
+  try {
+    const docRef = doc(db, POLLS_COLLECTION, pollId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data() as Poll;
+    }
+    return null;
+  } catch (err) {
+    console.warn('getPollById error:', err);
+    return null;
+  }
+}
+
+// 17. Record a User Vote for a Poll
+export async function recordVoteInFirestore(
+  pollId: string,
+  answers: Record<string, string> // questionId -> optionId
+): Promise<boolean> {
+  try {
+    const docRef = doc(db, POLLS_COLLECTION, pollId);
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists()) return false;
+
+    const poll = docSnap.data() as Poll;
+    const updatedQuestions = poll.questions.map((q) => {
+      const selectedOptionId = answers[q.id];
+      if (!selectedOptionId) return q;
+
+      const updatedOptions = q.options.map((opt) => {
+        if (opt.id === selectedOptionId) {
+          return { ...opt, voteCount: (opt.voteCount || 0) + 1 };
+        }
+        return opt;
+      });
+
+      return { ...q, options: updatedOptions };
+    });
+
+    const newTotalVotes = (poll.totalVotes || 0) + 1;
+
+    await setDoc(
+      docRef,
+      {
+        questions: updatedQuestions,
+        totalVotes: newTotalVotes,
+        updatedAt: Timestamp.now(),
+      },
+      { merge: true }
+    );
+
+    return true;
+  } catch (err) {
+    console.warn('recordVoteInFirestore error:', err);
+    return false;
   }
 }
