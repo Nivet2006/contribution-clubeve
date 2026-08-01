@@ -44,7 +44,7 @@ export const BrandMark = ({ className = '', role = '' }: { className?: string; r
     <span
       onClick={handleClick}
       title="Club-Eve Integrity Brand Mark (Double click for security status)"
-      className={`font-mono text-sm tracking-widest select-none text-[#FFB703] hover:text-[#E85D04] cursor-pointer transition-colors ${className}`}
+      className={`font-mono text-sm tracking-widest select-none text-black font-bold hover:text-slate-700 cursor-pointer transition-colors ${className}`}
     >
       |||··||
     </span>

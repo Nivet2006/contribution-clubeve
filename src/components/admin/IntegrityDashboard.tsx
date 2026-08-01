@@ -39,10 +39,7 @@ export default function IntegrityDashboard({
   const [syncSuccess, setSyncSuccess] = useState<boolean>(false);
 
   const handleSyncClick = async () => {
-    setSyncSuccess(false);
     await onRefreshData();
-    setSyncSuccess(true);
-    setTimeout(() => setSyncSuccess(false), 2500);
   };
 
   // Multi-selection state
@@ -171,28 +168,10 @@ export default function IntegrityDashboard({
           <button
             onClick={handleSyncClick}
             disabled={isSyncing}
-            className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all duration-300 border shadow-sm ${
-              syncSuccess
-                ? 'bg-emerald-100 text-emerald-900 border-emerald-400 scale-105'
-                : 'bg-slate-100 hover:bg-slate-200 text-slate-900 border-slate-300'
-            } disabled:opacity-60`}
+            className="flex items-center space-x-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all disabled:opacity-60"
           >
-            {syncSuccess ? (
-              <>
-                <CheckCircle className="w-4 h-4 text-emerald-600 animate-bounce" />
-                <span className="text-emerald-900">Synced {submissions.length} Records!</span>
-              </>
-            ) : isSyncing ? (
-              <>
-                <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#003C5E]" />
-                <span>Syncing Cloud...</span>
-              </>
-            ) : (
-              <>
-                <RefreshCw className="w-3.5 h-3.5 text-[#003C5E]" />
-                <span>Sync Data</span>
-              </>
-            )}
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-[#003C5E]' : 'text-[#003C5E]'}`} />
+            <span>{isSyncing ? 'Syncing...' : 'Sync Data'}</span>
           </button>
 
           <button
