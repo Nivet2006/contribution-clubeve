@@ -27,8 +27,8 @@ export default function RoundPage() {
   const [loadingRound, setLoadingRound] = useState<boolean>(true);
 
   const [adminConfig, setAdminConfig] = useState<FocusConfig>(getAdminConfig());
-  const [contributorName, setContributorName] = useState<string>('Jordan Vance');
-  const [contributorEmail, setContributorEmail] = useState<string>('jordan.vance@example.com');
+  const [contributorName, setContributorName] = useState<string>('');
+  const [contributorEmail, setContributorEmail] = useState<string>('');
   const [isRulesAccepted, setIsRulesAccepted] = useState<boolean>(false);
 
   const [answers, setAnswers] = useState<Record<string, string>>({});

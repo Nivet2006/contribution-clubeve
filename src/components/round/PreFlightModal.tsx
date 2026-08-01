@@ -156,18 +156,18 @@ export default function PreFlightModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-mono text-slate-700 mb-1 font-bold">Full Name</label>
+                <label className="block text-xs font-mono text-slate-700 mb-1 font-bold font-mono">Full Name</label>
                 <input
                   type="text"
                   value={contributorName}
                   onChange={(e) => onNameChange(e.target.value)}
-                  placeholder="e.g. Jordan Vance"
+                  placeholder="Enter your full name"
                   className="w-full bg-white border-2 border-slate-300 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-black text-xs font-semibold"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-slate-700 mb-1 font-bold">Email Address</label>
+                <label className="block text-xs font-mono text-slate-700 mb-1 font-bold font-mono">Email Address</label>
                 <div className="flex items-center space-x-2">
                   <input
                     type="email"
@@ -177,7 +177,7 @@ export default function PreFlightModal({
                       onEmailChange(e.target.value);
                       if (otpVerified) setOtpVerified(false);
                     }}
-                    placeholder="jordan.vance@example.com"
+                    placeholder="Enter your email address"
                     className="w-full bg-white border-2 border-slate-300 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-black text-xs font-semibold disabled:opacity-75 disabled:bg-slate-100"
                   />
                   {!otpVerified && (
