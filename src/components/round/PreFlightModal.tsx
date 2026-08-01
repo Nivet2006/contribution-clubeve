@@ -114,7 +114,9 @@ export default function PreFlightModal({
     }
   };
 
-  const canBegin = agreedRules && contributorName.trim().length > 0 && contributorEmail.trim().length > 0 && otpVerified;
+  const isOtpRequired = round.requireOtp !== false;
+  const isEmailValid = contributorEmail.trim().includes('@');
+  const canBegin = agreedRules && contributorName.trim().length > 0 && isEmailValid && (!isOtpRequired || otpVerified);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
@@ -147,16 +149,20 @@ export default function PreFlightModal({
                 <Lock className="w-4 h-4 text-[#003C5E]" />
                 <span>Contributor Verification</span>
               </h3>
-              {otpVerified && (
+              {!isOtpRequired ? (
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-300 flex items-center space-x-1">
+                  <span>DIRECT ENTRY (OTP OFF)</span>
+                </span>
+              ) : otpVerified ? (
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center space-x-1">
                   <span>✓ EMAIL AUTHENTICATED</span>
                 </span>
-              )}
+              ) : null}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-mono text-slate-700 mb-1 font-bold font-mono">Full Name</label>
+                <label className="block text-xs font-mono text-slate-700 mb-1 font-bold font-mono">Full Name *</label>
                 <input
                   type="text"
                   value={contributorName}
@@ -167,11 +173,11 @@ export default function PreFlightModal({
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-slate-700 mb-1 font-bold font-mono">Email Address</label>
+                <label className="block text-xs font-mono text-slate-700 mb-1 font-bold font-mono">Email Address *</label>
                 <div className="flex items-center space-x-2">
                   <input
                     type="email"
-                    disabled={otpVerified}
+                    disabled={isOtpRequired && otpVerified}
                     value={contributorEmail}
                     onChange={(e) => {
                       onEmailChange(e.target.value);
@@ -180,7 +186,7 @@ export default function PreFlightModal({
                     placeholder="Enter your email address"
                     className="w-full bg-white border-2 border-slate-300 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-black text-xs font-semibold disabled:opacity-75 disabled:bg-slate-100"
                   />
-                  {!otpVerified && (
+                  {isOtpRequired && !otpVerified && (
                     <button
                       type="button"
                       disabled={isSendingOtp || resendCooldown > 0 || !contributorEmail.includes('@')}
@@ -200,8 +206,8 @@ export default function PreFlightModal({
               </div>
             </div>
 
-            {/* OTP Input Row */}
-            {otpSent && !otpVerified && (
+            {/* OTP Input Row (Only shown when OTP is required) */}
+            {isOtpRequired && otpSent && !otpVerified && (
               <div className="p-4 bg-white rounded-xl border-2 border-slate-200 space-y-3">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-mono font-bold text-[#003C5E]">Enter 6-Digit OTP Code Sent via Brevo</label>

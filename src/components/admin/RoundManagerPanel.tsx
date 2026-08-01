@@ -124,14 +124,19 @@ export default function RoundManagerPanel({ rounds, adminEmail, onRoundsUpdated 
                       </div>
                     </td>
                     <td className="py-3.5 px-5">
-                      <button
-                        onClick={() => handleStatusCycle(round)}
-                        disabled={toggling === round.id}
-                        className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full border font-mono font-bold text-[10px] uppercase tracking-wider transition-all hover:opacity-80 cursor-pointer ${s.pill}`}
-                      >
-                        {toggling === round.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : s.icon}
-                        <span>{s.label}</span>
-                      </button>
+                      <div className="flex flex-col space-y-1 items-start">
+                        <button
+                          onClick={() => handleStatusCycle(round)}
+                          disabled={toggling === round.id}
+                          className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full border font-mono font-bold text-[10px] uppercase tracking-wider transition-all hover:opacity-80 cursor-pointer ${s.pill}`}
+                        >
+                          {toggling === round.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : s.icon}
+                          <span>{s.label}</span>
+                        </button>
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold border uppercase ${round.requireOtp !== false ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-100 text-slate-600 border-slate-300'}`}>
+                          {round.requireOtp !== false ? 'OTP REQUIRED' : 'NO OTP'}
+                        </span>
+                      </div>
                     </td>
                     <td className="py-3.5 px-5 text-right">
                       <div className="flex items-center justify-end space-x-1.5">

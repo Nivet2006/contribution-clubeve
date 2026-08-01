@@ -84,6 +84,7 @@ export interface Round {
   totalQuestions: number;
   questions: Question[];
   status: RoundStatus;
+  requireOtp?: boolean; // Default true, toggleable by admin per round
   createdAt: number;
   createdBy: string;
 }

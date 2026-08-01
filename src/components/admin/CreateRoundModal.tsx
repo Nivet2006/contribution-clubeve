@@ -37,6 +37,7 @@ export default function CreateRoundModal({ adminEmail, onClose, onSaved }: Props
   const [category, setCategory] = useState('');
   const [duration, setDuration] = useState(30);
   const [initialStatus, setInitialStatus] = useState<RoundStatus>('HIDDEN');
+  const [requireOtp, setRequireOtp] = useState<boolean>(true);
 
   // Step 2 fields
   const [questions, setQuestions] = useState<Question[]>([EMPTY_QUESTION()]);
@@ -145,6 +146,7 @@ export default function CreateRoundModal({ adminEmail, onClose, onSaved }: Props
       totalQuestions: cleanedQuestions.length,
       questions: cleanedQuestions as Question[],
       status: initialStatus,
+      requireOtp,
       createdAt: Date.now(),
       createdBy: adminEmail,
     };
@@ -207,6 +209,32 @@ export default function CreateRoundModal({ adminEmail, onClose, onSaved }: Props
                   ))}
                 </div>
                 <p className="text-[10px] text-slate-500 font-mono mt-1">HIDDEN = invisible to contributors · ACTIVE = visible & open · CLOSED = visible but closed</p>
+              </div>
+
+              {/* Email OTP Verification Requirement Toggle */}
+              <div className="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-xs font-mono font-bold text-slate-900 uppercase">Email OTP Verification</label>
+                    <p className="text-[11px] text-slate-500 font-mono">When OFF, contributors enter Name & Email without receiving an OTP email.</p>
+                  </div>
+                  <div className="flex items-center space-x-1 bg-white p-1 rounded-xl border border-slate-300">
+                    <button
+                      type="button"
+                      onClick={() => setRequireOtp(true)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition-all ${requireOtp ? 'bg-[#003C5E] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                    >
+                      ON (Required)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRequireOtp(false)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase transition-all ${!requireOtp ? 'bg-[#E85D04] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                    >
+                      OFF (Direct Entry)
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -351,6 +379,7 @@ export default function CreateRoundModal({ adminEmail, onClose, onSaved }: Props
                   <div><span className="text-xs text-slate-500 font-mono">Duration</span><p className="font-bold text-slate-900 font-mono">{duration} minutes</p></div>
                   <div><span className="text-xs text-slate-500 font-mono">Questions</span><p className="font-bold text-slate-900 font-mono">{questions.length}</p></div>
                   <div><span className="text-xs text-slate-500 font-mono">Initial Status</span><span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase border mt-0.5 ${statusColors[initialStatus]}`}>{initialStatus}</span></div>
+                  <div><span className="text-xs text-slate-500 font-mono">Email OTP Verification</span><p className="font-mono text-xs font-bold text-slate-800 mt-0.5">{requireOtp ? 'ON (Required)' : 'OFF (Direct Entry)'}</p></div>
                   <div><span className="text-xs text-slate-500 font-mono">Created By</span><p className="font-mono text-xs text-slate-700">{adminEmail}</p></div>
                 </div>
               </div>
