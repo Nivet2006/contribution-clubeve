@@ -384,7 +384,7 @@ export default function CreateRoundModal({ adminEmail, onClose, onSaved }: Props
             </button>
           ) : (
             <button type="button" disabled={saving} onClick={handleSave} className="flex items-center space-x-1.5 px-6 py-2 bg-[#E85D04] hover:bg-[#ba4a03] text-white rounded-xl text-xs font-mono font-bold uppercase transition-all shadow-sm disabled:opacity-60">
-              {saving ? <><span>Saving...</span></> : <><Check className="w-4 h-4" /><span>Save Round to Firestore</span></>}
+              {saving ? <><span>Publishing...</span></> : <><Check className="w-4 h-4" /><span>Publish Round</span></>}
             </button>
           )}
         </div>
