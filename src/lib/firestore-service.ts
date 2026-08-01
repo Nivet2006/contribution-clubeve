@@ -205,12 +205,12 @@ export function subscribeToRounds(
   }
 }
 
-// 10. Fetch public rounds for contributor homepage (ACTIVE + CLOSED only, NOT HIDDEN)
+// 10. Fetch public rounds for contributor homepage (ACTIVE only)
 export async function fetchPublicRounds(): Promise<Round[]> {
   try {
     const q = query(
       collection(db, ROUNDS_COLLECTION),
-      where('status', 'in', ['ACTIVE', 'CLOSED']),
+      where('status', '==', 'ACTIVE'),
       orderBy('createdAt', 'desc')
     );
     const snapshot = await getDocs(q);
@@ -220,6 +220,32 @@ export async function fetchPublicRounds(): Promise<Round[]> {
   } catch (err) {
     console.warn('fetchPublicRounds error:', err);
     return [];
+  }
+}
+
+// 10b. Real-time subscription to public ACTIVE rounds for contributors
+export function subscribeToPublicRounds(
+  onUpdate: (rounds: Round[]) => void
+): () => void {
+  try {
+    const q = query(
+      collection(db, ROUNDS_COLLECTION),
+      where('status', '==', 'ACTIVE'),
+      orderBy('createdAt', 'desc')
+    );
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const list: Round[] = [];
+        snapshot.forEach((docSnap) => list.push(docSnap.data() as Round));
+        onUpdate(list);
+      },
+      (err) => console.warn('Firestore public rounds subscription error:', err)
+    );
+    return unsubscribe;
+  } catch (err) {
+    console.warn('Could not attach public rounds listener:', err);
+    return () => {};
   }
 }
 

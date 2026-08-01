@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { fetchPublicRounds } from '@/lib/firestore-service';
+import { fetchPublicRounds, subscribeToPublicRounds } from '@/lib/firestore-service';
 import { SAMPLE_ROUNDS } from '@/lib/storage';
 import { Round } from '@/types/focus';
 import { Play, Sparkles, Lock, RefreshCw } from 'lucide-react';
@@ -12,17 +12,19 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadRounds = async () => {
-      try {
-        const firestoreRounds = await fetchPublicRounds();
-        setRounds(firestoreRounds);
-      } catch {
-        setRounds([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadRounds();
+    // Initial fetch
+    fetchPublicRounds().then((res) => {
+      setRounds(res);
+      setLoading(false);
+    });
+
+    // Real-time listener for ACTIVE rounds status changes
+    const unsub = subscribeToPublicRounds((updatedRounds) => {
+      setRounds(updatedRounds);
+      setLoading(false);
+    });
+
+    return () => unsub();
   }, []);
 
   return (

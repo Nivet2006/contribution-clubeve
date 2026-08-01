@@ -179,9 +179,27 @@ export default function RoundPage() {
         <p className="text-xs text-slate-600 font-mono">This round may have been removed or is no longer accessible.</p>
         <button
           onClick={() => router.push('/')}
-          className="px-6 py-2.5 bg-[#003C5E] text-white rounded-xl text-xs font-mono font-bold uppercase"
+          className="px-6 py-2.5 bg-[#003C5E] text-white rounded-xl text-xs font-mono font-bold uppercase shadow-sm hover:bg-[#00253b] transition-all"
         >
-          Back to Homepage
+          Return to Rounds Catalog
+        </button>
+      </div>
+    );
+  }
+
+  if (round.status !== 'ACTIVE' && !isRulesAccepted) {
+    return (
+      <div className="bg-white border-2 border-black rounded-[2.5rem] p-12 text-center space-y-4 max-w-xl mx-auto my-12">
+        <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto" />
+        <h2 className="text-lg font-black text-slate-900 uppercase">Round Currently Unavailable</h2>
+        <p className="text-xs text-slate-600 font-mono">
+          This evaluation round is currently <strong className="uppercase font-black text-slate-900">{round.status}</strong> and is not open for contributor participation.
+        </p>
+        <button
+          onClick={() => router.push('/')}
+          className="px-6 py-2.5 bg-[#003C5E] text-white rounded-xl text-xs font-mono font-bold uppercase shadow-sm hover:bg-[#00253b] transition-all"
+        >
+          Return to Rounds Catalog
         </button>
       </div>
     );
