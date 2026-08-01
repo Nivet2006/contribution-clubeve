@@ -1,4 +1,5 @@
 import { DeviceInfo, FocusConfig, ViolationSeverity, ViolationType } from '@/types/focus';
+import { UAParser } from 'ua-parser-js';
 
 export const DEFAULT_FOCUS_CONFIG: FocusConfig = {
   maxViolations: 3,
@@ -13,81 +14,29 @@ export const DEFAULT_FOCUS_CONFIG: FocusConfig = {
 export function getDeviceInfo(): DeviceInfo {
   if (typeof window === 'undefined') {
     return {
-      browser: 'Unknown',
-      os: 'Unknown',
+      browser: 'Unknown Browser',
+      os: 'Unknown OS',
       screenResolution: 'Unknown',
       sessionID: 'sess_fallback',
       ipAddress: 'Client Device',
     };
   }
 
-  const nav = navigator as any;
-  const ua = nav.userAgent || '';
+  const parser = new UAParser(navigator.userAgent);
+  const result = parser.getResult();
+
+  // Browser string with version
   let browser = 'Unknown Browser';
+  if (result.browser.name) {
+    browser = result.browser.version
+      ? `${result.browser.name} ${result.browser.version.split('.')[0]}`
+      : result.browser.name;
+  }
+
+  // OS string with version
   let os = 'Unknown OS';
-
-  // 1. Try High-Entropy / Modern navigator.userAgentData API first (Chrome/Edge/Brave/Opera)
-  if (nav.userAgentData && nav.userAgentData.brands) {
-    const brands: Array<{ brand: string; version: string }> = nav.userAgentData.brands;
-    const brandNames = brands.map((b) => b.brand);
-
-    if (brandNames.some((b) => b.includes('Microsoft Edge') || b.includes('Edg'))) {
-      browser = 'Microsoft Edge';
-    } else if (brandNames.some((b) => b.includes('Opera') || b.includes('OPR'))) {
-      browser = 'Opera';
-    } else if (brandNames.some((b) => b.includes('Google Chrome') || b.includes('Chrome'))) {
-      browser = 'Google Chrome';
-    } else if (brandNames.some((b) => b.includes('Brave'))) {
-      browser = 'Brave';
-    }
-  }
-
-  // 2. Fallback to UserAgent Parsing if browser was not resolved
-  if (browser === 'Unknown Browser') {
-    if (ua.includes('Edg/') || ua.includes('Edge/')) {
-      browser = 'Microsoft Edge';
-    } else if (ua.includes('OPR/') || ua.includes('Opera/')) {
-      browser = 'Opera';
-    } else if (ua.includes('Firefox/')) {
-      const match = ua.match(/Firefox\/([0-9.]+)/);
-      browser = match ? `Firefox ${match[1]}` : 'Mozilla Firefox';
-    } else if (ua.includes('CriOS/')) {
-      browser = 'Chrome (iOS)';
-    } else if (ua.includes('FxiOS/')) {
-      browser = 'Firefox (iOS)';
-    } else if (ua.includes('Safari/') && !ua.includes('Chrome/')) {
-      const match = ua.match(/Version\/([0-9.]+)/);
-      browser = match ? `Safari ${match[1]}` : 'Apple Safari';
-    } else if (ua.includes('Chrome/')) {
-      const match = ua.match(/Chrome\/([0-9.]+)/);
-      browser = match ? `Chrome ${match[1].split('.')[0]}` : 'Google Chrome';
-    } else if (nav.brave) {
-      browser = 'Brave';
-    }
-  }
-
-  // 3. OS Detection with Version & Platform details
-  const platform = nav.userAgentData?.platform || nav.platform || '';
-
-  if (platform.toLowerCase().includes('win') || ua.includes('Windows')) {
-    if (ua.includes('Windows NT 10.0')) os = 'Windows 10/11';
-    else if (ua.includes('Windows NT 6.3')) os = 'Windows 8.1';
-    else if (ua.includes('Windows NT 6.2')) os = 'Windows 8';
-    else if (ua.includes('Windows NT 6.1')) os = 'Windows 7';
-    else os = 'Windows OS';
-  } else if (ua.includes('Android')) {
-    const match = ua.match(/Android\s([0-9.]+)/);
-    os = match ? `Android ${match[1]}` : 'Android OS';
-  } else if (ua.includes('iPhone') || ua.includes('iPad') || ua.includes('iPod')) {
-    const match = ua.match(/OS\s([0-9_]+)/);
-    os = match ? `iOS ${match[1].replace(/_/g, '.')}` : 'iOS';
-  } else if (platform.toLowerCase().includes('mac') || ua.includes('Mac OS X') || ua.includes('Macintosh')) {
-    const match = ua.match(/Mac OS X\s([0-9_]+)/);
-    os = match ? `macOS ${match[1].replace(/_/g, '.')}` : 'macOS';
-  } else if (ua.includes('Ubuntu')) {
-    os = 'Ubuntu Linux';
-  } else if (platform.toLowerCase().includes('linux') || ua.includes('Linux')) {
-    os = 'Linux OS';
+  if (result.os.name) {
+    os = result.os.version ? `${result.os.name} ${result.os.version}` : result.os.name;
   }
 
   const screenResolution = `${window.screen.width}x${window.screen.height} (${window.innerWidth}x${window.innerHeight} viewport)`;
