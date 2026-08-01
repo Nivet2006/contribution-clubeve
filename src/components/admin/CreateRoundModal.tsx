@@ -169,7 +169,7 @@ export default function CreateRoundModal({ adminEmail, onClose, onSaved }: Props
         {/* Header */}
         <div className="bg-[#003C5E] p-5 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-black text-white uppercase tracking-tight">Create New Evaluation Round</h2>
+            <h2 className="text-lg font-black !text-white text-white uppercase tracking-tight">Create New Evaluation Round</h2>
             <p className="text-xs text-white/70 font-mono">Step {step} of 3 — {step === 1 ? 'Round Info' : step === 2 ? 'Add Questions' : 'Review & Save'}</p>
           </div>
           <div className="flex items-center space-x-2">

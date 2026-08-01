@@ -69,10 +69,10 @@ export default function RoundManagerPanel({ rounds, adminEmail, onRoundsUpdated 
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center space-x-2 px-5 py-2.5 bg-[#E85D04] hover:bg-[#ba4a03] text-white rounded-xl text-xs font-mono font-bold uppercase tracking-wider shadow-sm transition-all"
+          className="flex items-center space-x-2 px-5 py-2.5 bg-[#E85D04] hover:bg-[#ba4a03] !text-white text-white rounded-xl text-xs font-mono font-bold uppercase tracking-wider shadow-sm transition-all"
         >
-          <Plus className="w-4 h-4" />
-          <span>Create New Round</span>
+          <Plus className="w-4 h-4 text-white" />
+          <span className="!text-white text-white">Create New Round</span>
         </button>
       </div>
 
