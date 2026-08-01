@@ -14,8 +14,6 @@ export default function AdminLoginModal({ onSignIn, authError }: AdminLoginModal
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [seeding, setSeeding] = useState(false);
-  const [seedMsg, setSeedMsg] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,19 +22,6 @@ export default function AdminLoginModal({ onSignIn, authError }: AdminLoginModal
     setIsLoading(false);
   };
 
-  const handleSeedAdmin = async () => {
-    setSeeding(true);
-    setSeedMsg(null);
-    try {
-      const res = await fetch('/api/seed-admin', { method: 'POST' });
-      const data = await res.json();
-      setSeedMsg(data.message || (data.success ? 'Admin seeded!' : 'Seed failed.'));
-    } catch {
-      setSeedMsg('Error calling seed API.');
-    } finally {
-      setSeeding(false);
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -49,7 +34,7 @@ export default function AdminLoginModal({ onSignIn, authError }: AdminLoginModal
           </div>
           <div className="flex items-center space-x-2">
             <ShieldAlert className="w-5 h-5 text-[#FFB703]" />
-            <h2 className="text-lg font-black tracking-tight uppercase">Admin Portal Access</h2>
+            <h2 className="text-lg font-black tracking-tight uppercase text-white" style={{ color: '#ffffff' }}>Admin Portal Access</h2>
           </div>
           <p className="text-xs text-white/80 font-mono text-center">
             Restricted to authorised Club-Eve administrators only
@@ -105,22 +90,6 @@ export default function AdminLoginModal({ onSignIn, authError }: AdminLoginModal
             <Lock className="w-4 h-4" />
             <span>{isLoading ? 'Authenticating...' : 'Sign In to Admin Portal'}</span>
           </button>
-
-          {/* Seed Admin Helper */}
-          <div className="border-t border-slate-200 pt-3 space-y-2">
-            <p className="text-[10px] text-slate-500 font-mono text-center">First time? Seed the admin account below.</p>
-            <button
-              type="button"
-              disabled={seeding}
-              onClick={handleSeedAdmin}
-              className="w-full py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all disabled:opacity-60"
-            >
-              {seeding ? 'Seeding...' : 'Seed Admin Account (help@clubeve.nivet2006.in)'}
-            </button>
-            {seedMsg && (
-              <p className="text-[11px] font-mono text-center text-[#007F6E] font-bold">{seedMsg}</p>
-            )}
-          </div>
         </form>
 
       </div>

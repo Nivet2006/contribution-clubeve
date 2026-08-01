@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { SAMPLE_ROUNDS, loadDraft, saveSubmission, getAdminConfig } from '@/lib/storage';
+import { loadDraft, saveSubmission, getAdminConfig } from '@/lib/storage';
+import { getRoundById } from '@/lib/firestore-service';
 import { FocusConfig, Round, Submission, ViolationLog } from '@/types/focus';
 import { getDeviceInfo, calculateFocusScore } from '@/lib/focus-engine';
 
@@ -15,14 +16,15 @@ import ViolationToast from '@/components/round/ViolationToast';
 import AutoSubmitModal from '@/components/round/AutoSubmitModal';
 import QuestionCard from '@/components/round/QuestionCard';
 
-import { Maximize2, Clock, Save, AlertTriangle } from 'lucide-react';
+import { Maximize2, Clock, Save, AlertTriangle, RefreshCw } from 'lucide-react';
 
 export default function RoundPage() {
   const params = useParams();
   const router = useRouter();
   const roundId = params?.id as string;
 
-  const round = SAMPLE_ROUNDS.find((r) => r.id === roundId) || SAMPLE_ROUNDS[0];
+  const [round, setRound] = useState<Round | null>(null);
+  const [loadingRound, setLoadingRound] = useState<boolean>(true);
 
   const [adminConfig, setAdminConfig] = useState<FocusConfig>(getAdminConfig());
   const [contributorName, setContributorName] = useState<string>('Jordan Vance');
@@ -31,22 +33,34 @@ export default function RoundPage() {
 
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
-  const [remainingSeconds, setRemainingSeconds] = useState<number>(round.durationMinutes * 60);
+  const [remainingSeconds, setRemainingSeconds] = useState<number>(1800);
 
   const [finalSubmission, setFinalSubmission] = useState<Submission | null>(null);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 
-  // Load Draft on Mount
+  // Fetch Round Data on Mount
   useEffect(() => {
-    const draft = loadDraft(round.id);
-    if (draft) {
-      setAnswers(draft.answers || {});
-      setRemainingSeconds(draft.remainingSeconds || round.durationMinutes * 60);
-      if (draft.contributorName) setContributorName(draft.contributorName);
-      if (draft.contributorEmail) setContributorEmail(draft.contributorEmail);
-      if (draft.isRulesAccepted) setIsRulesAccepted(draft.isRulesAccepted);
+    async function fetchRound() {
+      if (!roundId) return;
+      setLoadingRound(true);
+      const data = await getRoundById(roundId);
+      if (data) {
+        setRound(data);
+        setRemainingSeconds(data.durationMinutes * 60);
+
+        const draft = loadDraft(data.id);
+        if (draft) {
+          setAnswers(draft.answers || {});
+          setRemainingSeconds(draft.remainingSeconds || data.durationMinutes * 60);
+          if (draft.contributorName) setContributorName(draft.contributorName);
+          if (draft.contributorEmail) setContributorEmail(draft.contributorEmail);
+          if (draft.isRulesAccepted) setIsRulesAccepted(draft.isRulesAccepted);
+        }
+      }
+      setLoadingRound(false);
     }
-  }, [round.id, round.durationMinutes]);
+    fetchRound();
+  }, [roundId]);
 
   const isSessionActive = isRulesAccepted && !isSubmitted;
 
@@ -63,7 +77,7 @@ export default function RoundPage() {
   };
 
   const { lastSavedTime, isSaving, forceAutoSave } = useAutoSave(
-    round.id,
+    round?.id || 'unknown',
     draftState,
     adminConfig.autoSaveIntervalSeconds,
     isSessionActive
@@ -72,7 +86,7 @@ export default function RoundPage() {
   // Submission Finalizer
   const finalizeSubmission = useCallback(
     (status: 'MANUAL_SUBMITTED' | 'AUTO_SUBMITTED', reason?: string, currentViolations: ViolationLog[] = []) => {
-      if (isSubmitted) return;
+      if (isSubmitted || !round) return;
 
       const device = getDeviceInfo();
       const focusScore = calculateFocusScore(currentViolations);
@@ -145,9 +159,37 @@ export default function RoundPage() {
     await requestFullscreen();
   };
 
+  // Render Pre-flight Modal
+  if (loadingRound) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <div className="flex flex-col items-center space-y-3">
+          <RefreshCw className="w-8 h-8 text-[#003C5E] animate-spin" />
+          <p className="text-xs text-slate-500 font-mono uppercase tracking-widest">Loading round details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!round) {
+    return (
+      <div className="bg-white border-2 border-black rounded-[2.5rem] p-12 text-center space-y-4 max-w-xl mx-auto my-12">
+        <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto" />
+        <h2 className="text-lg font-black text-slate-900 uppercase">Evaluation Round Not Found</h2>
+        <p className="text-xs text-slate-600 font-mono">This round may have been removed or is no longer accessible.</p>
+        <button
+          onClick={() => router.push('/')}
+          className="px-6 py-2.5 bg-[#003C5E] text-white rounded-xl text-xs font-mono font-bold uppercase"
+        >
+          Back to Homepage
+        </button>
+      </div>
+    );
+  }
+
   const currentQuestion = round.questions[currentQuestionIndex];
 
-  // Render Pre-flight Modal
+  // Pre-flight setup modal
   if (!isRulesAccepted) {
     return (
       <PreFlightModal

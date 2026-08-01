@@ -61,12 +61,17 @@ export interface Submission {
 
 export type RoundStatus = 'ACTIVE' | 'CLOSED' | 'HIDDEN';
 
+export interface MCQOption {
+  type: 'text' | 'image';
+  value: string; // text string or compressed base64 data URL
+}
+
 export interface Question {
   id: string;
   title: string;
   description: string;
   type: 'mcq' | 'text' | 'code';
-  options?: string[];
+  options?: (string | MCQOption)[];
   initialCode?: string;
   placeholder?: string;
 }

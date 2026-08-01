@@ -55,21 +55,43 @@ export default function QuestionCard({
       <div className="space-y-4 pt-2">
         {/* 1. Multiple Choice Options */}
         {question.type === 'mcq' && question.options && (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {question.options.map((opt, idx) => {
-              const isSelected = currentAnswer === opt;
+              const optObj = typeof opt === 'string'
+                ? { type: 'text' as const, value: opt }
+                : opt;
+              const optionKey = optObj.value;
+              const isSelected = currentAnswer === optionKey;
+              const letter = String.fromCharCode(65 + idx);
+
               return (
                 <div
                   key={idx}
-                  onClick={() => onChangeAnswer(opt)}
-                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${
+                  onClick={() => onChangeAnswer(optionKey)}
+                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between space-y-3 ${
                     isSelected
                       ? 'bg-emerald-950/60 border-[#007F6E] text-white shadow-sm font-bold'
                       : 'bg-slate-900/60 border-slate-800 text-white/90 hover:bg-slate-800 hover:border-slate-700 font-semibold'
                   }`}
                 >
-                  <span className="text-xs sm:text-sm">{opt}</span>
-                  {isSelected && <CheckCircle className="w-5 h-5 text-[#007F6E] shrink-0" />}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono font-bold text-[#FFB703] bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700">
+                      Option {letter}
+                    </span>
+                    {isSelected && <CheckCircle className="w-5 h-5 text-[#007F6E] shrink-0" />}
+                  </div>
+
+                  {optObj.type === 'text' ? (
+                    <span className="text-xs sm:text-sm leading-relaxed">{optObj.value}</span>
+                  ) : (
+                    <div className="w-full flex justify-center bg-black/40 rounded-xl p-2 border border-slate-800/80">
+                      <img
+                        src={optObj.value}
+                        alt={`Option ${letter}`}
+                        className="max-h-48 object-contain rounded-lg transition-transform hover:scale-105"
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}

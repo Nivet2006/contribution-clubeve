@@ -15,18 +15,9 @@ export default function HomePage() {
     const loadRounds = async () => {
       try {
         const firestoreRounds = await fetchPublicRounds();
-        if (firestoreRounds.length > 0) {
-          setRounds(firestoreRounds);
-        } else {
-          // Fallback to sample rounds with status
-          setRounds(
-            SAMPLE_ROUNDS.map((r) => ({ ...r, status: 'ACTIVE' as const, createdAt: Date.now(), createdBy: 'system' }))
-          );
-        }
+        setRounds(firestoreRounds);
       } catch {
-        setRounds(
-          SAMPLE_ROUNDS.map((r) => ({ ...r, status: 'ACTIVE' as const, createdAt: Date.now(), createdBy: 'system' }))
-        );
+        setRounds([]);
       } finally {
         setLoading(false);
       }

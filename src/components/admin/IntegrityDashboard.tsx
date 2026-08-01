@@ -1,12 +1,12 @@
-'use client';
-
 import React, { useState } from 'react';
 import { FocusConfig, Submission, Round } from '@/types/focus';
 import SubmissionExportPanel from './SubmissionExportPanel';
 import AdminConfigPanel from './AdminConfigPanel';
 import RoundManagerPanel from './RoundManagerPanel';
 import BrandMark from '@/components/common/BrandMark';
-import { ShieldCheck, ShieldAlert, Search, Filter, Download, Sliders, Eye, RefreshCw, AlertTriangle, Users, FileCheck, Award, Layers } from 'lucide-react';
+import { deleteSubmissionsFromFirestore, purgeAllSubmissionsFromFirestore } from '@/lib/firestore-service';
+import { deleteSelectedSubmissions, clearAllSubmissions } from '@/lib/storage';
+import { ShieldCheck, ShieldAlert, Search, Filter, Download, Sliders, Eye, RefreshCw, AlertTriangle, Users, FileCheck, Award, Layers, Trash2, CheckSquare, Square, Lock, X } from 'lucide-react';
 
 interface IntegrityDashboardProps {
   submissions: Submission[];
@@ -28,8 +28,22 @@ export default function IntegrityDashboard({
   const [activeTab, setActiveTab] = useState<'submissions' | 'rounds' | 'config'>('submissions');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'MANUAL_SUBMITTED' | 'AUTO_SUBMITTED'>('ALL');
+  const [roundFilter, setRoundFilter] = useState<string>('ALL');
+
+  // Multi-selection state
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  // Purge password modal state
+  const [showPurgeModal, setShowPurgeModal] = useState<boolean>(false);
+  const [purgePassword, setPurgePassword] = useState<string>('');
+  const [purgeError, setPurgeError] = useState<string | null>(null);
+  const [purging, setPurging] = useState<boolean>(false);
+
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const selectedRound = selectedSubmission ? rounds.find((r) => r.id === selectedSubmission.roundId) || null : null;
+
+  // Extract unique round titles for filter dropdown
+  const uniqueRoundTitles = Array.from(new Set(submissions.map((s) => s.roundTitle)));
 
   // Compute Metrics
   const totalSubmissions = submissions.length;
@@ -47,13 +61,30 @@ export default function IntegrityDashboard({
       s.roundTitle.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesStatus = statusFilter === 'ALL' || s.status === statusFilter;
+    const matchesRound = roundFilter === 'ALL' || s.roundTitle === roundFilter;
 
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatus && matchesRound;
   });
 
-  const exportAllCSV = () => {
+  const isAllSelected = filteredSubmissions.length > 0 && filteredSubmissions.every((s) => selectedIds.includes(s.id));
+
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredSubmissions.map((s) => s.id));
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const exportCSVForSubmissions = (targetSubmissions: Submission[], filenamePrefix: string) => {
     const headers = ['ID', 'Contributor', 'Email', 'Round', 'Status', 'Violations', 'Focus Score', 'Browser', 'OS', 'IP'];
-    const rows = submissions.map((s) => [
+    const rows = targetSubmissions.map((s) => [
       s.id,
       `"${s.contributorName}"`,
       s.contributorEmail,
@@ -70,10 +101,41 @@ export default function IntegrityDashboard({
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `integrity_submissions_export_${Date.now()}.csv`);
+    link.setAttribute('download', `${filenamePrefix}_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     link.remove();
+  };
+
+  const exportAllCSV = () => exportCSVForSubmissions(submissions, 'all_submissions_export');
+
+  const exportSelectedCSV = () => {
+    const selectedSubs = submissions.filter((s) => selectedIds.includes(s.id));
+    exportCSVForSubmissions(selectedSubs, 'selected_submissions_export');
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.length === 0) return;
+    deleteSelectedSubmissions(selectedIds);
+    await deleteSubmissionsFromFirestore(selectedIds);
+    setSelectedIds([]);
+    onRefreshData();
+  };
+
+  const handleConfirmPurgeAll = async () => {
+    if (purgePassword !== '123456') {
+      setPurgeError('Incorrect admin password.');
+      return;
+    }
+    setPurging(true);
+    setPurgeError(null);
+    clearAllSubmissions();
+    await purgeAllSubmissionsFromFirestore();
+    setPurging(false);
+    setShowPurgeModal(false);
+    setPurgePassword('');
+    setSelectedIds([]);
+    onRefreshData();
   };
 
   return (
@@ -197,31 +259,91 @@ export default function IntegrityDashboard({
       {activeTab === 'submissions' && (
         <div className="space-y-6">
           
-          {/* Controls: Search and Filters */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Controls: Search, Round Filter, Status Filter & Selection Action Toolbar */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border-2 border-black p-4 rounded-2xl shadow-sm">
             
-            <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search contributor, email, or round..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white border-2 border-slate-300 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black font-semibold"
-              />
+            <div className="flex flex-wrap items-center gap-3 flex-1">
+              {/* Search input */}
+              <div className="relative w-full sm:w-64">
+                <Search className="w-4 h-4 absolute left-3.5 top-2.5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search contributor..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black font-semibold"
+                />
+              </div>
+
+              {/* Filter by Round Name */}
+              <div className="flex items-center space-x-1.5">
+                <span className="text-[10px] font-mono font-bold text-slate-500 uppercase">Round:</span>
+                <select
+                  value={roundFilter}
+                  onChange={(e) => setRoundFilter(e.target.value)}
+                  className="bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs font-mono text-slate-900 font-bold focus:outline-none focus:border-black max-w-[200px] truncate"
+                >
+                  <option value="ALL">All Rounds ({rounds.length})</option>
+                  {uniqueRoundTitles.map((title) => (
+                    <option key={title} value={title}>
+                      {title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Filter by Status */}
+              <div className="flex items-center space-x-1.5">
+                <span className="text-[10px] font-mono font-bold text-slate-500 uppercase">Status:</span>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                  className="bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs font-mono text-slate-900 font-bold focus:outline-none focus:border-black"
+                >
+                  <option value="ALL">All Submissions</option>
+                  <option value="MANUAL_SUBMITTED">Manual Submissions</option>
+                  <option value="AUTO_SUBMITTED">Auto-Submitted</option>
+                </select>
+              </div>
             </div>
 
-            <div className="flex items-center space-x-2 w-full sm:w-auto">
-              <Filter className="w-4 h-4 text-slate-500" />
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="bg-white border-2 border-slate-300 rounded-xl px-3 py-2 text-xs font-mono text-slate-900 font-bold focus:outline-none focus:border-black"
+            {/* Selection & Batch Action Toolbar */}
+            <div className="flex flex-wrap items-center gap-2 border-t md:border-t-0 pt-3 md:pt-0 border-slate-200">
+              {selectedIds.length > 0 ? (
+                <>
+                  <span className="text-[10px] font-mono font-bold text-[#003C5E] bg-slate-100 px-2 py-1 rounded-lg border border-slate-300">
+                    {selectedIds.length} Selected
+                  </span>
+                  <button
+                    onClick={exportSelectedCSV}
+                    className="flex items-center space-x-1 px-3 py-1.5 bg-[#003C5E] hover:bg-[#00253b] text-white rounded-xl text-xs font-mono font-bold uppercase shadow-sm transition-all"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Export Selected</span>
+                  </button>
+                  <button
+                    onClick={handleDeleteSelected}
+                    className="flex items-center space-x-1 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-mono font-bold uppercase shadow-sm transition-all"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Selected</span>
+                  </button>
+                </>
+              ) : null}
+
+              {/* Purge All Submissions Button */}
+              <button
+                onClick={() => {
+                  setShowPurgeModal(true);
+                  setPurgePassword('');
+                  setPurgeError(null);
+                }}
+                className="flex items-center space-x-1 px-3 py-1.5 bg-rose-950 hover:bg-rose-900 text-rose-200 border border-rose-800 rounded-xl text-xs font-mono font-bold uppercase shadow-sm transition-all ml-auto"
+                title="Purge all submissions permanently"
               >
-                <option value="ALL">All Submissions</option>
-                <option value="MANUAL_SUBMITTED">Manual Submissions</option>
-                <option value="AUTO_SUBMITTED">Auto-Submitted (Violations)</option>
-              </select>
+                <Lock className="w-3.5 h-3.5 text-rose-400" />
+                <span>Purge All</span>
+              </button>
             </div>
 
           </div>
@@ -232,6 +354,11 @@ export default function IntegrityDashboard({
               <table className="w-full text-left text-xs text-slate-900">
                 <thead className="bg-slate-100 text-slate-700 font-mono uppercase tracking-widest text-[10px] border-b-2 border-black">
                   <tr>
+                    <th className="py-4 px-4 w-10 text-center">
+                      <button type="button" onClick={toggleSelectAll} className="text-slate-600 hover:text-black">
+                        {isAllSelected ? <CheckSquare className="w-4 h-4 text-[#003C5E]" /> : <Square className="w-4 h-4 text-slate-400" />}
+                      </button>
+                    </th>
                     <th className="py-4 px-6">Contributor</th>
                     <th className="py-4 px-6">Round Title</th>
                     <th className="py-4 px-6">Status</th>
@@ -245,16 +372,24 @@ export default function IntegrityDashboard({
                 <tbody className="divide-y divide-slate-200">
                   {filteredSubmissions.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-8 text-center text-slate-500 font-mono font-bold">
+                      <td colSpan={8} className="py-8 text-center text-slate-500 font-mono font-bold">
                         No submission logs found matching search criteria.
                       </td>
                     </tr>
                   ) : (
                     filteredSubmissions.map((sub) => {
                       const isAuto = sub.status === 'AUTO_SUBMITTED';
+                      const isSelected = selectedIds.includes(sub.id);
                       return (
-                        <tr key={sub.id} className="hover:bg-slate-50 transition-colors">
+                        <tr key={sub.id} className={`transition-colors ${isSelected ? 'bg-amber-50/60' : 'hover:bg-slate-50'}`}>
                           
+                          {/* Checkbox */}
+                          <td className="py-4 px-4 text-center">
+                            <button type="button" onClick={() => toggleSelectOne(sub.id)} className="text-slate-600 hover:text-black">
+                              {isSelected ? <CheckSquare className="w-4 h-4 text-[#003C5E]" /> : <Square className="w-4 h-4 text-slate-300" />}
+                            </button>
+                          </td>
+
                           {/* Contributor */}
                           <td className="py-4 px-6">
                             <div className="font-bold text-slate-900 font-sans">{sub.contributorName}</div>
@@ -355,6 +490,63 @@ export default function IntegrityDashboard({
         round={selectedRound}
         onClose={() => setSelectedSubmission(null)}
       />
+
+      {/* Password-Protected Purge Submissions Modal */}
+      {showPurgeModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white border-2 border-black rounded-[2.5rem] p-6 space-y-5 shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3">
+              <div className="flex items-center space-x-2 text-rose-600">
+                <ShieldAlert className="w-5 h-5" />
+                <h3 className="text-base font-black uppercase tracking-tight text-slate-900">Purge All Submissions</h3>
+              </div>
+              <button onClick={() => setShowPurgeModal(false)} className="text-slate-400 hover:text-slate-700 p-1"><X className="w-5 h-5" /></button>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-xs text-slate-600 leading-relaxed font-sans font-semibold">
+                Warning: This action will <strong className="text-rose-600">permanently delete all {submissions.length} submission logs</strong> from both local storage and cloud Firestore database. This action cannot be undone.
+              </p>
+
+              <div>
+                <label className="block text-xs font-mono font-bold text-slate-700 mb-1">Enter Admin Security Password *</label>
+                <input
+                  type="password"
+                  placeholder="Enter admin password (e.g. 123456)"
+                  value={purgePassword}
+                  onChange={(e) => setPurgePassword(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleConfirmPurgeAll(); }}
+                  className="w-full bg-slate-50 border-2 border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 text-sm font-mono font-bold focus:outline-none focus:border-rose-600"
+                />
+              </div>
+
+              {purgeError && (
+                <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-mono font-bold">
+                  {purgeError}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end space-x-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowPurgeModal(false)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-mono font-bold uppercase transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={purging}
+                onClick={handleConfirmPurgeAll}
+                className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-mono font-bold uppercase tracking-wider shadow-sm transition-all disabled:opacity-60"
+              >
+                {purging ? 'Purging...' : 'Confirm Purge All'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

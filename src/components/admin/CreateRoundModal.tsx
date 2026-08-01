@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Round, Question, RoundStatus } from '@/types/focus';
+import { Round, Question, RoundStatus, MCQOption } from '@/types/focus';
 import { saveRoundToFirestore } from '@/lib/firestore-service';
-import { X, Plus, Trash2, ChevronRight, ChevronLeft, Check, Code, FileText, CheckSquare } from 'lucide-react';
+import { compressImage } from '@/lib/image-compressor';
+import { X, Plus, Trash2, ChevronRight, ChevronLeft, Check, Code, FileText, CheckSquare, Upload, Image as ImageIcon } from 'lucide-react';
 
 interface Props {
   adminEmail: string;
@@ -17,7 +18,12 @@ const EMPTY_QUESTION = (): Question => ({
   description: '',
   type: 'text',
   placeholder: '',
-  options: ['', '', '', ''],
+  options: [
+    { type: 'text', value: '' },
+    { type: 'text', value: '' },
+    { type: 'text', value: '' },
+    { type: 'text', value: '' },
+  ],
   initialCode: '',
 });
 
@@ -43,7 +49,7 @@ export default function CreateRoundModal({ adminEmail, onClose, onSaved }: Props
   const updateQuestion = (idx: number, patch: Partial<Question>) =>
     setQuestions((q) => q.map((item, i) => (i === idx ? { ...item, ...patch } : item)));
 
-  const updateOption = (qIdx: number, oIdx: number, val: string) => {
+  const updateOption = (qIdx: number, oIdx: number, val: string | MCQOption) => {
     const q = [...questions];
     const opts = [...(q[qIdx].options || [])];
     opts[oIdx] = val;
@@ -51,9 +57,24 @@ export default function CreateRoundModal({ adminEmail, onClose, onSaved }: Props
     setQuestions(q);
   };
 
+  const handleImageUpload = async (qIdx: number, oIdx: number, file: File) => {
+    try {
+      const compressedDataUrl = await compressImage(file, {
+        maxWidth: 800,
+        maxHeight: 800,
+        quality: 0.75,
+        mimeType: 'image/webp',
+      });
+      updateOption(qIdx, oIdx, { type: 'image', value: compressedDataUrl });
+    } catch (err) {
+      console.error('Image compression failed:', err);
+      setError('Failed to compress image. Please try a different image.');
+    }
+  };
+
   const addOption = (qIdx: number) => {
     const q = [...questions];
-    q[qIdx] = { ...q[qIdx], options: [...(q[qIdx].options || []), ''] };
+    q[qIdx] = { ...q[qIdx], options: [...(q[qIdx].options || []), { type: 'text', value: '' }] };
     setQuestions(q);
   };
 
@@ -76,8 +97,11 @@ export default function CreateRoundModal({ adminEmail, onClose, onSaved }: Props
       if (!q.title.trim()) return `Question ${i + 1}: Title is required.`;
       if (!q.description.trim()) return `Question ${i + 1}: Description is required.`;
       if (q.type === 'mcq') {
-        const opts = (q.options || []).filter((o) => o.trim().length > 0);
-        if (opts.length < 2) return `Question ${i + 1}: MCQ needs at least 2 non-empty options.`;
+        const opts = (q.options || []).filter((o) => {
+          if (typeof o === 'string') return o.trim().length > 0;
+          return o.value && o.value.trim().length > 0;
+        });
+        if (opts.length < 2) return `Question ${i + 1}: MCQ needs at least 2 valid options (text or image).`;
       }
     }
     return null;
@@ -101,7 +125,13 @@ export default function CreateRoundModal({ adminEmail, onClose, onSaved }: Props
     setError(null);
     const cleanedQuestions = questions.map((q) => {
       const base = { id: q.id, title: q.title.trim(), description: q.description.trim(), type: q.type };
-      if (q.type === 'mcq') return { ...base, options: (q.options || []).filter((o) => o.trim()) };
+      if (q.type === 'mcq') {
+        const validOpts = (q.options || []).filter((o) => {
+          if (typeof o === 'string') return o.trim().length > 0;
+          return o.value && o.value.trim().length > 0;
+        }).map((o) => typeof o === 'string' ? { type: 'text', value: o.trim() } : { type: o.type, value: o.value });
+        return { ...base, options: validOpts };
+      }
       if (q.type === 'text') return { ...base, placeholder: q.placeholder || '' };
       if (q.type === 'code') return { ...base, initialCode: q.initialCode || '' };
       return base;
@@ -205,16 +235,97 @@ export default function CreateRoundModal({ adminEmail, onClose, onSaved }: Props
                   <textarea rows={2} value={q.description} onChange={(e) => updateQuestion(idx, { description: e.target.value })} placeholder="Full question description / prompt..." className="w-full bg-white border-2 border-slate-200 rounded-xl px-3 py-2 text-slate-900 text-xs font-medium focus:outline-none focus:border-black resize-none custom-scrollbar" />
 
                   {q.type === 'mcq' && (
-                    <div className="space-y-2">
-                      <p className="text-[10px] font-mono font-bold text-slate-500 uppercase">Answer Options</p>
-                      {(q.options || []).map((opt, oIdx) => (
-                        <div key={oIdx} className="flex items-center space-x-2">
-                          <span className="text-[10px] font-mono text-slate-400 w-5">{String.fromCharCode(65 + oIdx)})</span>
-                          <input value={opt} onChange={(e) => updateOption(idx, oIdx, e.target.value)} placeholder={`Option ${String.fromCharCode(65 + oIdx)}`} className="flex-1 bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 font-medium focus:outline-none focus:border-black" />
-                          {(q.options || []).length > 2 && <button type="button" onClick={() => removeOption(idx, oIdx)} className="text-slate-400 hover:text-rose-500"><X className="w-3.5 h-3.5" /></button>}
-                        </div>
-                      ))}
-                      <button type="button" onClick={() => addOption(idx)} className="text-[10px] font-mono font-bold text-[#003C5E] hover:underline flex items-center space-x-1"><Plus className="w-3 h-3" /><span>Add Option</span></button>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-mono font-bold text-slate-500 uppercase">Answer Options (Text or Compressed Image)</p>
+                        <button type="button" onClick={() => addOption(idx)} className="text-[10px] font-mono font-bold text-[#003C5E] hover:underline flex items-center space-x-1"><Plus className="w-3 h-3" /><span>Add Option</span></button>
+                      </div>
+
+                      {(q.options || []).map((opt, oIdx) => {
+                        const optObj: MCQOption = typeof opt === 'string'
+                          ? { type: 'text', value: opt }
+                          : opt;
+                        const isImage = optObj.type === 'image';
+
+                        return (
+                          <div key={oIdx} className="bg-white border border-slate-300 rounded-xl p-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-2">
+                                <span className="text-[10px] font-mono font-bold text-slate-500 w-5">{String.fromCharCode(65 + oIdx)})</span>
+                                <div className="flex items-center space-x-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                                  <button
+                                    type="button"
+                                    onClick={() => updateOption(idx, oIdx, { type: 'text', value: isImage ? '' : optObj.value })}
+                                    className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase transition-all ${!isImage ? 'bg-[#003C5E] text-white' : 'text-slate-500 hover:text-slate-800'}`}
+                                  >
+                                    Text
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => updateOption(idx, oIdx, { type: 'image', value: isImage ? optObj.value : '' })}
+                                    className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase transition-all ${isImage ? 'bg-[#003C5E] text-white' : 'text-slate-500 hover:text-slate-800'}`}
+                                  >
+                                    Image
+                                  </button>
+                                </div>
+                              </div>
+                              {(q.options || []).length > 2 && (
+                                <button type="button" onClick={() => removeOption(idx, oIdx)} className="text-slate-400 hover:text-rose-500 p-1 rounded"><X className="w-3.5 h-3.5" /></button>
+                              )}
+                            </div>
+
+                            {!isImage ? (
+                              <input
+                                value={optObj.value}
+                                onChange={(e) => updateOption(idx, oIdx, { type: 'text', value: e.target.value })}
+                                placeholder={`Option ${String.fromCharCode(65 + oIdx)} text content`}
+                                className="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 font-medium focus:outline-none focus:border-black"
+                              />
+                            ) : (
+                              <div className="space-y-2">
+                                {optObj.value ? (
+                                  <div className="relative group inline-block bg-slate-100 rounded-xl p-2 border border-slate-300">
+                                    {/* Compression size indicator */}
+                                    <div className="relative max-w-[200px] max-h-[150px] overflow-hidden rounded-lg">
+                                      <img src={optObj.value} alt={`Option ${String.fromCharCode(65 + oIdx)}`} className="object-contain max-h-[140px] rounded-lg" />
+                                    </div>
+                                    <div className="mt-1 flex items-center justify-between text-[9px] font-mono text-slate-500">
+                                      <span>Compressed WebP</span>
+                                      <span>~{Math.round((optObj.value.length * 3) / 4 / 1024)} KB</span>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => updateOption(idx, oIdx, { type: 'image', value: '' })}
+                                      className="absolute -top-2 -right-2 bg-rose-600 text-white p-1 rounded-full shadow-md hover:bg-rose-700 transition-colors"
+                                      title="Remove Image"
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div className="border-2 border-dashed border-slate-300 hover:border-[#003C5E] rounded-xl p-4 text-center transition-colors">
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      id={`opt_img_${idx}_${oIdx}`}
+                                      className="hidden"
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) handleImageUpload(idx, oIdx, file);
+                                      }}
+                                    />
+                                    <label htmlFor={`opt_img_${idx}_${oIdx}`} className="cursor-pointer flex flex-col items-center justify-center space-y-1">
+                                      <Upload className="w-5 h-5 text-slate-400" />
+                                      <span className="text-xs font-mono font-bold text-[#003C5E]">Upload Option Image</span>
+                                      <span className="text-[9px] font-mono text-slate-400">Auto-compressed to &lt;100KB WebP</span>
+                                    </label>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                   {q.type === 'text' && (

@@ -224,6 +224,18 @@ export function saveSubmission(submission: Submission) {
   saveSubmissionToFirestore(submission);
 }
 
+export function deleteSelectedSubmissions(ids: string[]) {
+  if (typeof window === 'undefined') return;
+  const current = getSubmissions();
+  const filtered = current.filter((s) => !ids.includes(s.id));
+  localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(filtered));
+}
+
+export function clearAllSubmissions() {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify([]));
+}
+
 export function getAdminConfig(): FocusConfig {
   if (typeof window === 'undefined') return DEFAULT_FOCUS_CONFIG;
   try {

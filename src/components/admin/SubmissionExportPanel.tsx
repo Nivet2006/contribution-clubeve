@@ -36,16 +36,9 @@ export default function SubmissionExportPanel({ submission, round, onClose }: Pr
   const [activeTab, setActiveTab] = useState<ExportTab>('form');
   const [exporting, setExporting] = useState(false);
 
-  if (!submission) return null;
-
-  // ── JSON ─────────────────────────────────────────────────────────────────────
-  const handleDownloadJSON = () => {
-    const blob = new Blob([JSON.stringify(submission, null, 2)], { type: 'application/json' });
-    downloadBlob(blob, `submission_${safeName(submission.contributorName)}_${submission.id}.json`);
-  };
-
   // ── EXCEL ─────────────────────────────────────────────────────────────────────
   const handleDownloadExcel = useCallback(async () => {
+    if (!submission) return;
     setExporting(true);
     try {
       const XLSX = (await import('xlsx')).default;
@@ -103,6 +96,7 @@ export default function SubmissionExportPanel({ submission, round, onClose }: Pr
 
   // ── PDF ──────────────────────────────────────────────────────────────────────
   const handleDownloadPDF = useCallback(async () => {
+    if (!submission) return;
     setExporting(true);
     try {
       const { default: jsPDF } = await import('jspdf');
@@ -199,6 +193,14 @@ export default function SubmissionExportPanel({ submission, round, onClose }: Pr
       setExporting(false);
     }
   }, [submission, round]);
+
+  if (!submission) return null;
+
+  // ── JSON ─────────────────────────────────────────────────────────────────────
+  const handleDownloadJSON = () => {
+    const blob = new Blob([JSON.stringify(submission, null, 2)], { type: 'application/json' });
+    downloadBlob(blob, `submission_${safeName(submission.contributorName)}_${submission.id}.json`);
+  };
 
   const formatTime = (ts: number) => new Date(ts).toLocaleString();
 

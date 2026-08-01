@@ -2,6 +2,7 @@ import {
   collection,
   doc,
   setDoc,
+  getDoc,
   getDocs,
   deleteDoc,
   onSnapshot,
@@ -33,7 +34,32 @@ export async function saveSubmissionToFirestore(submission: Submission): Promise
   }
 }
 
-// 2. Subscribe to Real-Time Submissions (for Admin Dashboard live feed)
+// 2. Delete selected submissions or purge all submissions
+export async function deleteSubmissionsFromFirestore(submissionIds: string[]): Promise<boolean> {
+  try {
+    for (const id of submissionIds) {
+      await deleteDoc(doc(db, SUBMISSIONS_COLLECTION, id));
+    }
+    return true;
+  } catch (err) {
+    console.warn('Firestore submission deletion error:', err);
+    return false;
+  }
+}
+
+export async function purgeAllSubmissionsFromFirestore(): Promise<boolean> {
+  try {
+    const snapshot = await getDocs(collection(db, SUBMISSIONS_COLLECTION));
+    const deletePromises = snapshot.docs.map((docSnap) => deleteDoc(docSnap.ref));
+    await Promise.all(deletePromises);
+    return true;
+  } catch (err) {
+    console.warn('Firestore purge error:', err);
+    return false;
+  }
+}
+
+// 3. Subscribe to Real-Time Submissions (for Admin Dashboard live feed)
 export function subscribeToSubmissions(
   onUpdate: (submissions: Submission[]) => void
 ): () => void {
@@ -197,3 +223,17 @@ export async function fetchPublicRounds(): Promise<Round[]> {
   }
 }
 
+// 11. Fetch single round by ID
+export async function getRoundById(roundId: string): Promise<Round | null> {
+  try {
+    const docRef = doc(db, ROUNDS_COLLECTION, roundId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data() as Round;
+    }
+    return null;
+  } catch (err) {
+    console.warn('getRoundById error:', err);
+    return null;
+  }
+}
