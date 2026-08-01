@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Round, RoundStatus } from '@/types/focus';
 import { updateRoundInFirestore, deleteRoundFromFirestore } from '@/lib/firestore-service';
 import CreateRoundModal from './CreateRoundModal';
-import { Plus, Eye, EyeOff, Lock, Trash2, ChevronDown, RefreshCw, Clock, HelpCircle } from 'lucide-react';
+import { Plus, Eye, EyeOff, Lock, Trash2, ChevronDown, RefreshCw, Clock, HelpCircle, Share2, Check } from 'lucide-react';
 
 interface Props {
   rounds: Round[];
@@ -41,6 +41,7 @@ export default function RoundManagerPanel({ rounds, adminEmail, onRoundsUpdated 
   const [toggling, setToggling] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [copiedRoundId, setCopiedRoundId] = useState<string | null>(null);
 
   const handleStatusCycle = async (round: Round) => {
     const next = STATUS_CYCLE[round.status];
@@ -133,17 +134,47 @@ export default function RoundManagerPanel({ rounds, adminEmail, onRoundsUpdated 
                       </button>
                     </td>
                     <td className="py-3.5 px-5 text-right">
-                      {confirmDelete === round.id ? (
-                        <div className="flex items-center justify-end space-x-2">
-                          <span className="text-[10px] text-rose-600 font-mono font-bold">Confirm delete?</span>
-                          <button onClick={() => handleDelete(round.id)} disabled={deleting === round.id} className="px-3 py-1 bg-rose-600 text-white text-[10px] font-bold rounded-lg hover:bg-rose-700 disabled:opacity-60">{deleting === round.id ? '...' : 'Yes, Delete'}</button>
-                          <button onClick={() => setConfirmDelete(null)} className="px-3 py-1 bg-slate-200 text-slate-700 text-[10px] font-bold rounded-lg hover:bg-slate-300">Cancel</button>
-                        </div>
-                      ) : (
-                        <button onClick={() => setConfirmDelete(round.id)} className="p-1.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
-                          <Trash2 className="w-4 h-4" />
+                      <div className="flex items-center justify-end space-x-1.5">
+                        {/* Share Round Direct Link */}
+                        <button
+                          onClick={() => {
+                            const url = `${window.location.origin}/round/${round.id}`;
+                            navigator.clipboard.writeText(url);
+                            setCopiedRoundId(round.id);
+                            setTimeout(() => setCopiedRoundId(null), 2500);
+                          }}
+                          className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-mono font-bold uppercase transition-all ${
+                            copiedRoundId === round.id
+                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                              : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
+                          }`}
+                          title="Copy direct share link"
+                        >
+                          {copiedRoundId === round.id ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Share2 className="w-3.5 h-3.5 text-[#003C5E]" />
+                              <span>Share</span>
+                            </>
+                          )}
                         </button>
-                      )}
+
+                        {/* Delete Round */}
+                        {confirmDelete === round.id ? (
+                          <div className="flex items-center space-x-1">
+                            <button onClick={() => handleDelete(round.id)} disabled={deleting === round.id} className="px-2 py-1 bg-rose-600 text-white text-[10px] font-bold rounded-lg hover:bg-rose-700 disabled:opacity-60">{deleting === round.id ? '...' : 'Confirm'}</button>
+                            <button onClick={() => setConfirmDelete(null)} className="px-2 py-1 bg-slate-200 text-slate-700 text-[10px] font-bold rounded-lg hover:bg-slate-300">Cancel</button>
+                          </div>
+                        ) : (
+                          <button onClick={() => setConfirmDelete(round.id)} className="p-1.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Delete Round">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
