@@ -90,6 +90,22 @@ export function subscribeToSubmissions(
   }
 }
 
+// 3.1 Fetch All Submissions from Firestore (One-shot manual sync)
+export async function fetchAllSubmissionsFromFirestore(): Promise<Submission[]> {
+  try {
+    const q = query(collection(db, SUBMISSIONS_COLLECTION), orderBy('lastSaveTime', 'desc'));
+    const snapshot = await getDocs(q);
+    const list: Submission[] = [];
+    snapshot.forEach((docSnap) => {
+      list.push(docSnap.data() as Submission);
+    });
+    return list;
+  } catch (err) {
+    console.warn('fetchAllSubmissionsFromFirestore error:', err);
+    return [];
+  }
+}
+
 // 3. Save Draft to Firestore
 export async function saveDraftToFirestore(roundId: string, draftState: any): Promise<boolean> {
   try {

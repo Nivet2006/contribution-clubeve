@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getSubmissions, getAdminConfig, saveAdminConfig } from '@/lib/storage';
-import { subscribeToSubmissions, subscribeToConfig, subscribeToRounds, subscribeToPolls } from '@/lib/firestore-service';
+import { subscribeToSubmissions, subscribeToConfig, subscribeToRounds, subscribeToPolls, fetchAllSubmissionsFromFirestore } from '@/lib/firestore-service';
 import { FocusConfig, Submission, Round, Poll } from '@/types/focus';
 import IntegrityDashboard from '@/components/admin/IntegrityDashboard';
 import AdminLoginModal from '@/components/admin/AdminLoginModal';
@@ -16,10 +16,22 @@ export default function AdminPage() {
   const [config, setConfig] = useState<FocusConfig>(getAdminConfig());
   const [rounds, setRounds] = useState<Round[]>([]);
   const [polls, setPolls] = useState<Poll[]>([]);
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
-  const refreshData = () => {
-    setSubmissions(getSubmissions());
+  const refreshData = async () => {
+    setIsSyncing(true);
+    // 1. Load Local Storage fallback
+    const local = getSubmissions();
     setConfig(getAdminConfig());
+
+    // 2. Query Cloud Firestore directly
+    const cloudSubs = await fetchAllSubmissionsFromFirestore();
+    if (cloudSubs.length > 0) {
+      setSubmissions(cloudSubs);
+    } else {
+      setSubmissions(local);
+    }
+    setIsSyncing(false);
   };
 
   useEffect(() => {
@@ -98,6 +110,7 @@ export default function AdminPage() {
         rounds={rounds}
         polls={polls}
         adminEmail={user.email || 'admin'}
+        isSyncing={isSyncing}
         onSaveConfig={handleSaveConfig}
         onRefreshData={refreshData}
       />

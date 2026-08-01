@@ -16,6 +16,7 @@ interface IntegrityDashboardProps {
   rounds: Round[];
   polls?: Poll[];
   adminEmail: string;
+  isSyncing?: boolean;
   onSaveConfig: (cfg: FocusConfig) => void;
   onRefreshData: () => void;
 }
@@ -26,6 +27,7 @@ export default function IntegrityDashboard({
   rounds,
   polls = [],
   adminEmail,
+  isSyncing = false,
   onSaveConfig,
   onRefreshData,
 }: IntegrityDashboardProps) {
@@ -160,10 +162,11 @@ export default function IntegrityDashboard({
         <div className="flex items-center space-x-3">
           <button
             onClick={onRefreshData}
-            className="flex items-center space-x-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-colors"
+            disabled={isSyncing}
+            className="flex items-center space-x-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-colors disabled:opacity-60"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>Sync Data</span>
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-[#003C5E]' : ''}`} />
+            <span>{isSyncing ? 'Syncing...' : 'Sync Data'}</span>
           </button>
 
           <button
