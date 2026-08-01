@@ -11,7 +11,11 @@ export default function Navbar() {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith('/admin');
   const isRound = pathname.startsWith('/round');
-  const isPolls = pathname.startsWith('/polls');
+  const isPolls = pathname === '/polls';
+  const isPollDetail = pathname.startsWith('/polls/');
+
+  // Hide nav items on shared direct links (e.g. /polls/poll_123 or /round/rnd_123)
+  const isSharedPage = isRound || isPollDetail;
 
   const [activePattern, setActivePattern] = useState<string>('grid');
 
@@ -55,7 +59,7 @@ export default function Navbar() {
         </div>
 
         {/* Mode Switcher & Pattern Selector */}
-        {!isRound && (
+        {!isSharedPage && (
           <div className="flex items-center space-x-3">
             
             {/* Pattern Switcher Dropdown */}
