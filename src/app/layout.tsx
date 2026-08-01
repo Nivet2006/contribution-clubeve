@@ -3,7 +3,7 @@ import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 
 export const metadata: Metadata = {
-  title: 'Club-Eve | Secure Focus Mode & Integrity Platform',
+  title: 'Contribution Club-Eve',
   description: 'Mandatory Focus Mode and anti-cheating integrity monitoring platform for active contribution rounds.',
 };
 
