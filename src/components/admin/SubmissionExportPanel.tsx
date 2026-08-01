@@ -209,12 +209,12 @@ export default function SubmissionExportPanel({ submission, round, onClose }: Pr
       <div className="w-full max-w-3xl bg-white border-2 border-black rounded-[2.5rem] shadow-2xl overflow-hidden my-6">
 
         {/* Header */}
-        <div className="bg-[#003C5E] p-5 flex items-center justify-between">
+        <div className="bg-[#003C5E] p-5 flex items-center justify-between text-white">
           <div>
-            <h2 className="text-base font-black text-white uppercase tracking-tight">Submission Report</h2>
-            <p className="text-xs text-white/70 font-mono">{submission.contributorName} · {submission.roundTitle}</p>
+            <h2 className="text-base font-black text-white !text-white uppercase tracking-tight">Submission Report</h2>
+            <p className="text-xs text-white/80 !text-white font-mono">{submission.contributorName} · {submission.roundTitle}</p>
           </div>
-          <button onClick={onClose} className="text-white/70 hover:text-white p-1.5 rounded-lg"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-white/80 hover:text-white p-1.5 rounded-lg"><X className="w-5 h-5" /></button>
         </div>
 
         {/* Tab Bar */}
