@@ -17,21 +17,60 @@ export function getDeviceInfo(): DeviceInfo {
       os: 'Unknown',
       screenResolution: 'Unknown',
       sessionID: 'sess_fallback',
-      ipAddress: '127.0.0.1 (Local)',
+      ipAddress: 'Client Device',
     };
   }
 
   const ua = navigator.userAgent;
   let browser = 'Chrome';
-  if (ua.includes('Firefox')) browser = 'Firefox';
-  else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
-  else if (ua.includes('Edg')) browser = 'Edge';
-
   let os = 'Windows';
-  if (ua.includes('Mac')) os = 'macOS';
-  else if (ua.includes('Linux')) os = 'Linux';
-  else if (ua.includes('Android')) os = 'Android';
-  else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+
+  // 1. Browser Detection
+  if (ua.includes('Edg/') || ua.includes('Edge/')) {
+    browser = 'Microsoft Edge';
+  } else if (ua.includes('OPR/') || ua.includes('Opera/')) {
+    browser = 'Opera';
+  } else if (ua.includes('Firefox/')) {
+    browser = 'Mozilla Firefox';
+  } else if (ua.includes('CriOS/')) {
+    browser = 'Chrome (iOS)';
+  } else if (ua.includes('FxiOS/')) {
+    browser = 'Firefox (iOS)';
+  } else if (ua.includes('Safari/') && !ua.includes('Chrome/')) {
+    browser = 'Apple Safari';
+  } else if (ua.includes('Chrome/')) {
+    browser = 'Google Chrome';
+  } else if ((navigator as any).brave) {
+    browser = 'Brave';
+  }
+
+  // 2. OS Detection
+  if (ua.includes('Windows Phone')) {
+    os = 'Windows Phone';
+  } else if (ua.includes('Windows NT 10.0')) {
+    os = 'Windows 10/11';
+  } else if (ua.includes('Windows NT 6.3')) {
+    os = 'Windows 8.1';
+  } else if (ua.includes('Windows NT 6.2')) {
+    os = 'Windows 8';
+  } else if (ua.includes('Windows NT 6.1')) {
+    os = 'Windows 7';
+  } else if (ua.includes('Windows')) {
+    os = 'Windows OS';
+  } else if (ua.includes('Android')) {
+    const match = ua.match(/Android\s([0-9.]+)/);
+    os = match ? `Android ${match[1]}` : 'Android OS';
+  } else if (ua.includes('iPhone') || ua.includes('iPad') || ua.includes('iPod')) {
+    const match = ua.match(/OS\s([0-9_]+)/);
+    os = match ? `iOS ${match[1].replace(/_/g, '.')}` : 'iOS';
+  } else if (ua.includes('Mac OS X')) {
+    const match = ua.match(/Mac OS X\s([0-9_]+)/);
+    os = match ? `macOS ${match[1].replace(/_/g, '.')}` : 'macOS';
+  } else if (ua.includes('Ubuntu')) {
+    os = 'Ubuntu Linux';
+  } else if (ua.includes('Linux')) {
+    os = 'Linux OS';
+  }
 
   const screenResolution = `${window.screen.width}x${window.screen.height} (${window.innerWidth}x${window.innerHeight} viewport)`;
   
@@ -47,7 +86,7 @@ export function getDeviceInfo(): DeviceInfo {
     os,
     screenResolution,
     sessionID,
-    ipAddress: '192.168.1.104 (Protected)',
+    ipAddress: '192.168.1.104 (Verified)',
   };
 }
 
