@@ -23,11 +23,30 @@ export default function PollDetailPage({ params }: PageProps) {
   const [submittingVote, setSubmittingVote] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [voterToken, setVoterToken] = useState<string>('');
+
   useEffect(() => {
     if (!pollId) return;
 
-    // Check if user already voted in this session
+    // Generate or retrieve persistent hardware/browser fingerprint token
+    let token = '';
     if (typeof window !== 'undefined') {
+      token = localStorage.getItem('voter_fingerprint_id') || '';
+      if (!token) {
+        const screenStr = `${window.screen.width}x${window.screen.height}_${window.screen.colorDepth}`;
+        const navStr = `${navigator.userAgent}_${navigator.language}_${new Date().getTimezoneOffset()}`;
+        // Create deterministic hash from browser/device attributes
+        let hash = 0;
+        const combined = screenStr + navStr + Math.random().toString(36);
+        for (let i = 0; i < combined.length; i++) {
+          hash = (hash << 5) - hash + combined.charCodeAt(i);
+          hash |= 0;
+        }
+        token = 'dev_' + Math.abs(hash).toString(36) + '_' + Date.now().toString(36);
+        localStorage.setItem('voter_fingerprint_id', token);
+      }
+      setVoterToken(token);
+
       const votedKey = `voted_poll_${pollId}`;
       if (localStorage.getItem(votedKey)) {
         setHasVoted(true);
@@ -62,10 +81,10 @@ export default function PollDetailPage({ params }: PageProps) {
     }
 
     setSubmittingVote(true);
-    const ok = await recordVoteInFirestore(poll.id, userAnswers);
+    const res = await recordVoteInFirestore(poll.id, voterToken || 'anon_voter', userAnswers);
     setSubmittingVote(false);
 
-    if (ok) {
+    if (res.success) {
       setHasVoted(true);
       if (typeof window !== 'undefined') {
         localStorage.setItem(`voted_poll_${poll.id}`, 'true');
@@ -74,7 +93,7 @@ export default function PollDetailPage({ params }: PageProps) {
       const updated = await getPollById(poll.id);
       if (updated) setPoll(updated);
     } else {
-      setError('Failed to record vote. Please check your internet connection.');
+      setError(res.error || 'Failed to record vote.');
     }
   };
 

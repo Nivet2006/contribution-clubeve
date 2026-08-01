@@ -344,17 +344,33 @@ export async function getPollById(pollId: string): Promise<Poll | null> {
   }
 }
 
-// 17. Record a User Vote for a Poll
+const POLL_VOTES_COLLECTION = 'poll_votes';
+
+// 17. Record a User Vote for a Poll with Single-Vote Enforcement
 export async function recordVoteInFirestore(
   pollId: string,
+  voterToken: string, // Unique hardware fingerprint + IP token
   answers: Record<string, string> // questionId -> optionId
-): Promise<boolean> {
+): Promise<{ success: boolean; error?: string }> {
   try {
-    const docRef = doc(db, POLLS_COLLECTION, pollId);
-    const docSnap = await getDoc(docRef);
-    if (!docSnap.exists()) return false;
+    // 1. Check if voter token has already voted for this poll in Cloud Firestore
+    const voteDocId = `${pollId}_${voterToken}`;
+    const voteRef = doc(db, POLL_VOTES_COLLECTION, voteDocId);
+    const existingVote = await getDoc(voteRef);
 
-    const poll = docSnap.data() as Poll;
+    if (existingVote.exists()) {
+      return { success: false, error: 'You have already submitted a vote for this poll.' };
+    }
+
+    // 2. Fetch Poll document
+    const pollRef = doc(db, POLLS_COLLECTION, pollId);
+    const pollSnap = await getDoc(pollRef);
+    if (!pollSnap.exists()) return { success: false, error: 'Poll not found.' };
+
+    const poll = pollSnap.data() as Poll;
+    if (poll.status !== 'ACTIVE') return { success: false, error: 'This poll is closed for voting.' };
+
+    // 3. Update vote counts for options
     const updatedQuestions = poll.questions.map((q) => {
       const selectedOptionId = answers[q.id];
       if (!selectedOptionId) return q;
@@ -371,8 +387,17 @@ export async function recordVoteInFirestore(
 
     const newTotalVotes = (poll.totalVotes || 0) + 1;
 
+    // 4. Save vote log to prevent duplicate votes
+    await setDoc(voteRef, {
+      pollId,
+      voterToken,
+      answers,
+      timestamp: Date.now(),
+    });
+
+    // 5. Update Poll counts
     await setDoc(
-      docRef,
+      pollRef,
       {
         questions: updatedQuestions,
         totalVotes: newTotalVotes,
@@ -381,9 +406,9 @@ export async function recordVoteInFirestore(
       { merge: true }
     );
 
-    return true;
+    return { success: true };
   } catch (err) {
     console.warn('recordVoteInFirestore error:', err);
-    return false;
+    return { success: false, error: 'Network error submitting vote.' };
   }
 }
