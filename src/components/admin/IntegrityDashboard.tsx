@@ -114,23 +114,19 @@ export default function IntegrityDashboard({
     exportCSVForSubmissions(selectedSubs, 'selected_submissions_export');
   };
 
-  const handleDeleteSelected = async () => {
-    if (selectedIds.length === 0) return;
-    deleteSelectedSubmissions(selectedIds);
-    await deleteSubmissionsFromFirestore(selectedIds);
-    setSelectedIds([]);
-    onRefreshData();
-  };
-
-  const handleConfirmPurgeAll = async () => {
+  const handleConfirmPurgeSelected = async () => {
     if (purgePassword !== '123456') {
       setPurgeError('Incorrect admin password.');
       return;
     }
+    if (selectedIds.length === 0) {
+      setPurgeError('No submissions selected to purge.');
+      return;
+    }
     setPurging(true);
     setPurgeError(null);
-    clearAllSubmissions();
-    await purgeAllSubmissionsFromFirestore();
+    deleteSelectedSubmissions(selectedIds);
+    await deleteSubmissionsFromFirestore(selectedIds);
     setPurging(false);
     setShowPurgeModal(false);
     setPurgePassword('');
@@ -322,28 +318,20 @@ export default function IntegrityDashboard({
                     <span>Export Selected</span>
                   </button>
                   <button
-                    onClick={handleDeleteSelected}
+                    onClick={() => {
+                      setShowPurgeModal(true);
+                      setPurgePassword('');
+                      setPurgeError(null);
+                    }}
                     className="flex items-center space-x-1 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-mono font-bold uppercase shadow-sm transition-all"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Delete Selected</span>
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>Purge Selected ({selectedIds.length})</span>
                   </button>
                 </>
-              ) : null}
-
-              {/* Purge All Submissions Button */}
-              <button
-                onClick={() => {
-                  setShowPurgeModal(true);
-                  setPurgePassword('');
-                  setPurgeError(null);
-                }}
-                className="flex items-center space-x-1 px-3 py-1.5 bg-rose-950 hover:bg-rose-900 text-rose-200 border border-rose-800 rounded-xl text-xs font-mono font-bold uppercase shadow-sm transition-all ml-auto"
-                title="Purge all submissions permanently"
-              >
-                <Lock className="w-3.5 h-3.5 text-rose-400" />
-                <span>Purge All</span>
-              </button>
+              ) : (
+                <span className="text-[11px] font-mono text-slate-400 italic">Select rows to export or purge</span>
+              )}
             </div>
 
           </div>
@@ -498,14 +486,14 @@ export default function IntegrityDashboard({
             <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3">
               <div className="flex items-center space-x-2 text-rose-600">
                 <ShieldAlert className="w-5 h-5" />
-                <h3 className="text-base font-black uppercase tracking-tight text-slate-900">Purge All Submissions</h3>
+                <h3 className="text-base font-black uppercase tracking-tight text-slate-900">Purge Selected Submissions</h3>
               </div>
               <button onClick={() => setShowPurgeModal(false)} className="text-slate-400 hover:text-slate-700 p-1"><X className="w-5 h-5" /></button>
             </div>
 
             <div className="space-y-3">
               <p className="text-xs text-slate-600 leading-relaxed font-sans font-semibold">
-                Warning: This action will <strong className="text-rose-600">permanently delete all {submissions.length} submission logs</strong> from both local storage and cloud Firestore database. This action cannot be undone.
+                Warning: This action will <strong className="text-rose-600">permanently delete the {selectedIds.length} selected submission log{selectedIds.length !== 1 ? 's' : ''}</strong> from both local storage and cloud Firestore database. This action cannot be undone.
               </p>
 
               <div>
@@ -515,7 +503,7 @@ export default function IntegrityDashboard({
                   placeholder="Enter admin password (e.g. 123456)"
                   value={purgePassword}
                   onChange={(e) => setPurgePassword(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleConfirmPurgeAll(); }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleConfirmPurgeSelected(); }}
                   className="w-full bg-slate-50 border-2 border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900 text-sm font-mono font-bold focus:outline-none focus:border-rose-600"
                 />
               </div>
@@ -538,10 +526,10 @@ export default function IntegrityDashboard({
               <button
                 type="button"
                 disabled={purging}
-                onClick={handleConfirmPurgeAll}
+                onClick={handleConfirmPurgeSelected}
                 className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-mono font-bold uppercase tracking-wider shadow-sm transition-all disabled:opacity-60"
               >
-                {purging ? 'Purging...' : 'Confirm Purge All'}
+                {purging ? 'Purging...' : `Confirm Purge (${selectedIds.length})`}
               </button>
             </div>
           </div>
