@@ -21,54 +21,72 @@ export function getDeviceInfo(): DeviceInfo {
     };
   }
 
-  const ua = navigator.userAgent;
-  let browser = 'Chrome';
-  let os = 'Windows';
+  const nav = navigator as any;
+  const ua = nav.userAgent || '';
+  let browser = 'Unknown Browser';
+  let os = 'Unknown OS';
 
-  // 1. Browser Detection
-  if (ua.includes('Edg/') || ua.includes('Edge/')) {
-    browser = 'Microsoft Edge';
-  } else if (ua.includes('OPR/') || ua.includes('Opera/')) {
-    browser = 'Opera';
-  } else if (ua.includes('Firefox/')) {
-    browser = 'Mozilla Firefox';
-  } else if (ua.includes('CriOS/')) {
-    browser = 'Chrome (iOS)';
-  } else if (ua.includes('FxiOS/')) {
-    browser = 'Firefox (iOS)';
-  } else if (ua.includes('Safari/') && !ua.includes('Chrome/')) {
-    browser = 'Apple Safari';
-  } else if (ua.includes('Chrome/')) {
-    browser = 'Google Chrome';
-  } else if ((navigator as any).brave) {
-    browser = 'Brave';
+  // 1. Try High-Entropy / Modern navigator.userAgentData API first (Chrome/Edge/Brave/Opera)
+  if (nav.userAgentData && nav.userAgentData.brands) {
+    const brands: Array<{ brand: string; version: string }> = nav.userAgentData.brands;
+    const brandNames = brands.map((b) => b.brand);
+
+    if (brandNames.some((b) => b.includes('Microsoft Edge') || b.includes('Edg'))) {
+      browser = 'Microsoft Edge';
+    } else if (brandNames.some((b) => b.includes('Opera') || b.includes('OPR'))) {
+      browser = 'Opera';
+    } else if (brandNames.some((b) => b.includes('Google Chrome') || b.includes('Chrome'))) {
+      browser = 'Google Chrome';
+    } else if (brandNames.some((b) => b.includes('Brave'))) {
+      browser = 'Brave';
+    }
   }
 
-  // 2. OS Detection
-  if (ua.includes('Windows Phone')) {
-    os = 'Windows Phone';
-  } else if (ua.includes('Windows NT 10.0')) {
-    os = 'Windows 10/11';
-  } else if (ua.includes('Windows NT 6.3')) {
-    os = 'Windows 8.1';
-  } else if (ua.includes('Windows NT 6.2')) {
-    os = 'Windows 8';
-  } else if (ua.includes('Windows NT 6.1')) {
-    os = 'Windows 7';
-  } else if (ua.includes('Windows')) {
-    os = 'Windows OS';
+  // 2. Fallback to UserAgent Parsing if browser was not resolved
+  if (browser === 'Unknown Browser') {
+    if (ua.includes('Edg/') || ua.includes('Edge/')) {
+      browser = 'Microsoft Edge';
+    } else if (ua.includes('OPR/') || ua.includes('Opera/')) {
+      browser = 'Opera';
+    } else if (ua.includes('Firefox/')) {
+      const match = ua.match(/Firefox\/([0-9.]+)/);
+      browser = match ? `Firefox ${match[1]}` : 'Mozilla Firefox';
+    } else if (ua.includes('CriOS/')) {
+      browser = 'Chrome (iOS)';
+    } else if (ua.includes('FxiOS/')) {
+      browser = 'Firefox (iOS)';
+    } else if (ua.includes('Safari/') && !ua.includes('Chrome/')) {
+      const match = ua.match(/Version\/([0-9.]+)/);
+      browser = match ? `Safari ${match[1]}` : 'Apple Safari';
+    } else if (ua.includes('Chrome/')) {
+      const match = ua.match(/Chrome\/([0-9.]+)/);
+      browser = match ? `Chrome ${match[1].split('.')[0]}` : 'Google Chrome';
+    } else if (nav.brave) {
+      browser = 'Brave';
+    }
+  }
+
+  // 3. OS Detection with Version & Platform details
+  const platform = nav.userAgentData?.platform || nav.platform || '';
+
+  if (platform.toLowerCase().includes('win') || ua.includes('Windows')) {
+    if (ua.includes('Windows NT 10.0')) os = 'Windows 10/11';
+    else if (ua.includes('Windows NT 6.3')) os = 'Windows 8.1';
+    else if (ua.includes('Windows NT 6.2')) os = 'Windows 8';
+    else if (ua.includes('Windows NT 6.1')) os = 'Windows 7';
+    else os = 'Windows OS';
   } else if (ua.includes('Android')) {
     const match = ua.match(/Android\s([0-9.]+)/);
     os = match ? `Android ${match[1]}` : 'Android OS';
   } else if (ua.includes('iPhone') || ua.includes('iPad') || ua.includes('iPod')) {
     const match = ua.match(/OS\s([0-9_]+)/);
     os = match ? `iOS ${match[1].replace(/_/g, '.')}` : 'iOS';
-  } else if (ua.includes('Mac OS X')) {
+  } else if (platform.toLowerCase().includes('mac') || ua.includes('Mac OS X') || ua.includes('Macintosh')) {
     const match = ua.match(/Mac OS X\s([0-9_]+)/);
     os = match ? `macOS ${match[1].replace(/_/g, '.')}` : 'macOS';
   } else if (ua.includes('Ubuntu')) {
     os = 'Ubuntu Linux';
-  } else if (ua.includes('Linux')) {
+  } else if (platform.toLowerCase().includes('linux') || ua.includes('Linux')) {
     os = 'Linux OS';
   }
 
