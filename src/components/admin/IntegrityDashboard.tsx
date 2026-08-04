@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { FocusConfig, Submission, Round, Poll } from '@/types/focus';
 import SubmissionExportPanel from './SubmissionExportPanel';
 import AdminConfigPanel from './AdminConfigPanel';
@@ -164,8 +165,14 @@ export default function IntegrityDashboard({
       {/* Top Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border-2 border-black p-8 rounded-[2.5rem] shadow-sm text-slate-900">
         <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 rounded-2xl bg-[#003C5E] p-0.5 shadow-md flex items-center justify-center">
-            <ShieldCheck className="w-6 h-6 text-[#FFB703]" />
+          <div className="h-10 w-auto group-hover:scale-105 transition-transform flex items-center justify-center">
+            <Image
+              src="/logo.png"
+              alt="Club-Eve Logo"
+              width={120}
+              height={40}
+              className="h-10 w-auto object-contain"
+            />
           </div>
           <div>
             <div className="flex items-center space-x-3">
