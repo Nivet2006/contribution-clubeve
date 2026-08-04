@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 
 async function seedAdmin() {
-  const apiKey =
-    process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'AIzaSyCQZNYjgqYka5FImJ7uQY7TxsyAU8iP99E';
+  const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
   const adminEmail = 'help@clubeve.nivet2006.in';
   const adminPassword = 'ClubEve@9X#Kz2!Secure2024';
 

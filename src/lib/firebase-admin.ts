@@ -32,13 +32,13 @@ function getAdminApp(): App {
       console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY:', err);
       // Fallback to application default credentials
       adminApp = initializeApp({
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'contribute-theonepercentclub',
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
       });
     }
   } else {
-    // Development fallback: use project ID only (works when running on Google Cloud or with ADC)
+    // Development fallback: use project ID only
     adminApp = initializeApp({
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'contribute-theonepercentclub',
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
     });
   }
 
