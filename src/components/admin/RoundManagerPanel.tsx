@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Round, RoundStatus } from '@/types/focus';
 import { apiSaveRound, apiDeleteRound } from '@/lib/admin-api';
+import { deleteRoundFromFirestore } from '@/lib/firestore-service';
 import CreateRoundModal from './CreateRoundModal';
 import { Plus, Eye, EyeOff, Lock, Trash2, ChevronDown, RefreshCw, Clock, HelpCircle, Share2, Check, ShieldAlert, X } from 'lucide-react';
 
@@ -77,10 +78,18 @@ export default function RoundManagerPanel({ rounds, adminEmail, onRoundsUpdated 
 
   const handleDelete = async (roundId: string) => {
     setDeleting(roundId);
-    await apiDeleteRound(roundId);
-    setDeleting(null);
-    setConfirmDelete(null);
-    onRoundsUpdated();
+    try {
+      const res = await apiDeleteRound(roundId);
+      if (!res?.success) {
+        await deleteRoundFromFirestore(roundId);
+      }
+    } catch (err) {
+      await deleteRoundFromFirestore(roundId).catch(() => {});
+    } finally {
+      setDeleting(null);
+      setConfirmDelete(null);
+      onRoundsUpdated();
+    }
   };
 
   return (

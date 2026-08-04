@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Poll } from '@/types/focus';
 import { apiUpdatePoll, apiDeletePoll } from '@/lib/admin-api';
+import { deletePollFromFirestore } from '@/lib/firestore-service';
 import CreatePollModal from './CreatePollModal';
 import { Plus, Eye, Lock, Trash2, Share2, Check, RefreshCw, BarChart2, Users, CheckCircle, X, PieChart } from 'lucide-react';
 
@@ -30,10 +31,18 @@ export default function PollManagerPanel({ polls, adminEmail, onPollsUpdated }: 
 
   const handleDelete = async (pollId: string) => {
     setDeleting(pollId);
-    await apiDeletePoll(pollId);
-    setDeleting(null);
-    setConfirmDelete(null);
-    onPollsUpdated();
+    try {
+      const res = await apiDeletePoll(pollId);
+      if (!res?.success) {
+        await deletePollFromFirestore(pollId);
+      }
+    } catch (err) {
+      await deletePollFromFirestore(pollId).catch(() => {});
+    } finally {
+      setDeleting(null);
+      setConfirmDelete(null);
+      onPollsUpdated();
+    }
   };
 
   return (
