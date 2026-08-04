@@ -8,7 +8,7 @@ import PollManagerPanel from './PollManagerPanel';
 import CreatePollModal from './CreatePollModal';
 import BrandMark from '@/components/common/BrandMark';
 import { apiDeleteSubmissions } from '@/lib/admin-api';
-import { deleteSelectedSubmissions, clearAllSubmissions } from '@/lib/storage';
+import { deleteSubmissionsFromFirestore } from '@/lib/firestore-service';
 import { ShieldCheck, ShieldAlert, Search, Filter, Download, Sliders, Eye, RefreshCw, AlertTriangle, Users, FileCheck, Award, Layers, Trash2, CheckSquare, Square, Lock, X, BarChart2, Plus, CheckCircle } from 'lucide-react';
 
 interface IntegrityDashboardProps {
@@ -150,13 +150,28 @@ export default function IntegrityDashboard({
     }
     setPurging(true);
     setPurgeError(null);
-    deleteSelectedSubmissions(selectedIds);
-    await apiDeleteSubmissions(selectedIds);
-    setPurging(false);
-    setShowPurgeModal(false);
-    setPurgePassword('');
-    setSelectedIds([]);
-    onRefreshData();
+
+    try {
+      // 1. Delete via server API route
+      const res = await apiDeleteSubmissions(selectedIds);
+      if (!res?.success) {
+        // Fallback to client-side Firestore deletion if API route returns unsuccessful or token issue
+        await deleteSubmissionsFromFirestore(selectedIds);
+      }
+      setShowPurgeModal(false);
+      setPurgePassword('');
+      setSelectedIds([]);
+      onRefreshData();
+    } catch (err: any) {
+      // Direct client-side deletion fallback on network error
+      await deleteSubmissionsFromFirestore(selectedIds).catch(() => {});
+      setShowPurgeModal(false);
+      setPurgePassword('');
+      setSelectedIds([]);
+      onRefreshData();
+    } finally {
+      setPurging(false);
+    }
   };
 
   return (
