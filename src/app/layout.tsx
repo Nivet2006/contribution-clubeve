@@ -3,7 +3,7 @@ import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://contribute-theonepercentclub.web.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://contribution-clubeve.nivet2006.in'),
   title: {
     default: 'Club-Eve | Contribution',
     template: '%s | Club-Eve',

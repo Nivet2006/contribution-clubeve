@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://contribute-theonepercentclub.web.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://contribution-clubeve.nivet2006.in';
 
   return {
     rules: [

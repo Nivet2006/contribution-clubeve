@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { fetchPublicRounds } from '@/lib/firestore-service';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://contribute-theonepercentclub.web.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://contribution-clubeve.nivet2006.in';
 
   // Static core routes
   const staticRoutes: MetadataRoute.Sitemap = [
