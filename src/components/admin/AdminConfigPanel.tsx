@@ -92,7 +92,7 @@ export default function AdminConfigPanel({ config, onSaveConfig }: AdminConfigPa
               onChange={(e) => setForm({ ...form, autoSaveIntervalSeconds: parseInt(e.target.value) || 5 })}
               className="w-full bg-white border-2 border-slate-300 rounded-xl px-3 py-2 text-slate-900 text-xs font-mono font-bold focus:outline-none focus:border-black"
             />
-            <p className="text-[10px] text-slate-500 font-mono mt-1 font-medium">Interval for periodic draft backups to Cloud Database.</p>
+            <p className="text-[10px] text-slate-500 font-mono mt-1 font-medium">Interval for periodic draft backups.</p>
           </div>
         </div>
 
