@@ -85,7 +85,11 @@ export default function PatternPicker() {
                       : 'border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50'
                   }`}
                 >
-                  <span className="capitalize">{item.label}</span>
+                  <div
+                    data-pattern={item.id}
+                    className="w-10 h-7 rounded-md border border-slate-300 bg-white shadow-xs overflow-hidden"
+                  />
+                  <span className="capitalize text-[11px] font-semibold">{item.label}</span>
                 </button>
               );
             })}

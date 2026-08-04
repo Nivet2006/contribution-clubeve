@@ -129,6 +129,7 @@ img {
 /* 2. Grid (Default) */
 [data-pattern="grid"] html,
 [data-pattern="grid"] body,
+div[data-pattern="grid"],
 html, body {
   background-image:
     linear-gradient(var(--grid-color) 1px, transparent 1px),
@@ -137,94 +138,93 @@ html, body {
     linear-gradient(90deg, var(--grid-color-2) 1px, transparent 1px) !important;
   background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px !important;
   background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px !important;
-  background-attachment: fixed !important;
 }
 
 /* 3. Dots */
 [data-pattern="dots"] html,
-[data-pattern="dots"] body {
+[data-pattern="dots"] body,
+div[data-pattern="dots"] {
   background-image: radial-gradient(var(--grid-color) 1.5px, transparent 1.5px) !important;
-  background-size: 24px 24px !important;
-  background-attachment: fixed !important;
+  background-size: 16px 16px !important;
 }
 
 /* 4. Cross */
 [data-pattern="cross"] html,
-[data-pattern="cross"] body {
+[data-pattern="cross"] body,
+div[data-pattern="cross"] {
   background-image:
     radial-gradient(var(--grid-color) 2px, transparent 2px),
     linear-gradient(to right, var(--grid-color-2) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-color-2) 1px, transparent 1px) !important;
-  background-size: 32px 32px, 32px 32px, 32px 32px !important;
-  background-attachment: fixed !important;
+  background-size: 16px 16px, 16px 16px, 16px 16px !important;
 }
 
 /* 5. Diagonal Lines */
 [data-pattern="diagonal"] html,
-[data-pattern="diagonal"] body {
-  background-image: repeating-linear-gradient(45deg, var(--grid-color) 0, var(--grid-color) 1px, transparent 0, transparent 24px) !important;
-  background-attachment: fixed !important;
+[data-pattern="diagonal"] body,
+div[data-pattern="diagonal"] {
+  background-image: repeating-linear-gradient(45deg, var(--grid-color) 0, var(--grid-color) 1px, transparent 0, transparent 12px) !important;
 }
 
 /* 6. Waves */
 [data-pattern="waves"] html,
-[data-pattern="waves"] body {
+[data-pattern="waves"] body,
+div[data-pattern="waves"] {
   background-image: radial-gradient(circle at 50% 50%, transparent 60%, var(--grid-color) 61%, var(--grid-color) 65%, transparent 66%) !important;
-  background-size: 40px 40px !important;
-  background-attachment: fixed !important;
+  background-size: 20px 20px !important;
 }
 
 /* 7. Hexagon */
 [data-pattern="hexagon"] html,
-[data-pattern="hexagon"] body {
+[data-pattern="hexagon"] body,
+div[data-pattern="hexagon"] {
   background-image:
     radial-gradient(circle at 50% 50%, transparent 35%, var(--grid-color) 36%, var(--grid-color) 40%, transparent 41%),
     radial-gradient(circle at 0 0, transparent 35%, var(--grid-color) 36%, var(--grid-color) 40%, transparent 41%) !important;
-  background-size: 48px 48px !important;
-  background-attachment: fixed !important;
+  background-size: 24px 24px !important;
 }
 
 /* 8. Circuit */
 [data-pattern="circuit"] html,
-[data-pattern="circuit"] body {
+[data-pattern="circuit"] body,
+div[data-pattern="circuit"] {
   background-image:
     linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
     linear-gradient(0deg, var(--grid-color) 1px, transparent 1px),
     radial-gradient(circle at 100% 100%, var(--grid-color) 3px, transparent 3px) !important;
-  background-size: 40px 40px, 40px 40px, 40px 40px !important;
-  background-attachment: fixed !important;
+  background-size: 20px 20px, 20px 20px, 20px 20px !important;
 }
 
 /* 9. Diamonds */
 [data-pattern="diamonds"] html,
-[data-pattern="diamonds"] body {
+[data-pattern="diamonds"] body,
+div[data-pattern="diamonds"] {
   background-image: repeating-linear-gradient(45deg, var(--grid-color) 0, var(--grid-color) 1px, transparent 0, transparent 50%), repeating-linear-gradient(-45deg, var(--grid-color) 0, var(--grid-color) 1px, transparent 0, transparent 50%) !important;
-  background-size: 20px 20px !important;
-  background-attachment: fixed !important;
+  background-size: 12px 12px !important;
 }
 
 /* 10. Polka */
 [data-pattern="polka"] html,
-[data-pattern="polka"] body {
+[data-pattern="polka"] body,
+div[data-pattern="polka"] {
   background-image: radial-gradient(var(--grid-color) 2px, transparent 2px) !important;
-  background-size: 24px 24px !important;
-  background-attachment: fixed !important;
+  background-size: 12px 12px !important;
 }
 
 /* 11. Scales */
 [data-pattern="scales"] html,
-[data-pattern="scales"] body {
+[data-pattern="scales"] body,
+div[data-pattern="scales"] {
   background-image: radial-gradient(circle at 50% 0, transparent 40%, var(--grid-color) 41%, var(--grid-color) 45%, transparent 46%) !important;
-  background-size: 32px 32px !important;
-  background-attachment: fixed !important;
+  background-size: 16px 16px !important;
 }
 
 /* 12. Zigzag */
 [data-pattern="zigzag"] html,
-[data-pattern="zigzag"] body {
+[data-pattern="zigzag"] body,
+div[data-pattern="zigzag"] {
   background-image: linear-gradient(135deg, var(--grid-color) 25%, transparent 25%), linear-gradient(225deg, var(--grid-color) 25%, transparent 25%), linear-gradient(315deg, var(--grid-color) 25%, transparent 25%), linear-gradient(45deg, var(--grid-color) 25%, transparent 25%) !important;
-  background-size: 24px 24px !important;
-  background-attachment: fixed !important;
+  background-size: 12px 12px !important;
 }
 
 /* Custom scrollbar */
