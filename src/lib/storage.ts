@@ -196,16 +196,15 @@ export function clearDraft(roundId: string) {
 }
 
 export function getSubmissions(): Submission[] {
-  if (typeof window === 'undefined') return INITIAL_SUBMISSIONS;
+  if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(SUBMISSIONS_KEY);
     if (!raw) {
-      localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(INITIAL_SUBMISSIONS));
-      return INITIAL_SUBMISSIONS;
+      return [];
     }
     return JSON.parse(raw) as Submission[];
   } catch {
-    return INITIAL_SUBMISSIONS;
+    return [];
   }
 }
 
