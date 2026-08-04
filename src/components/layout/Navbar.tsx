@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import BrandMark from '@/components/common/BrandMark';
+import PatternPicker from '@/components/common/PatternPicker';
 import { UserCheck, Eye, Layers, BarChart2, Menu, X, Shield } from 'lucide-react';
 
 export default function Navbar() {
@@ -113,25 +114,8 @@ export default function Navbar() {
 
             <div className="h-4 w-px bg-zinc-200" />
 
-            {/* Pattern Customizer Pill */}
-            <div className="flex items-center space-x-1.5 bg-zinc-50 px-3 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium">
-              <Layers className="w-4 h-4 text-[#003C5E]" />
-              <span className="text-xs font-mono text-zinc-700 uppercase font-semibold">Pattern:</span>
-              <select
-                value={activePattern}
-                onChange={(e) => changePattern(e.target.value)}
-                className="bg-white text-zinc-900 font-mono text-xs rounded-md px-2 py-0.5 focus:outline-none border border-zinc-300 cursor-pointer font-medium"
-              >
-                <option value="grid">Grid</option>
-                <option value="dots">Dots</option>
-                <option value="cross">Cross</option>
-                <option value="diagonal">Diagonal</option>
-                <option value="waves">Waves</option>
-                <option value="hexagon">Hexagon</option>
-                <option value="circuit">Circuit</option>
-                <option value="none">None</option>
-              </select>
-            </div>
+            {/* Pattern Picker Button Dropdown */}
+            <PatternPicker />
 
           </div>
         )}

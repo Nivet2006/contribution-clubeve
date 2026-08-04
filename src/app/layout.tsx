@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { PatternProvider } from '@/components/common/PatternProvider';
 import Navbar from '@/components/layout/Navbar';
 
 export const metadata: Metadata = {
@@ -61,10 +62,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-white text-slate-900 min-h-screen flex flex-col selection:bg-[#003C5E] selection:text-white">
-        <Navbar />
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {children}
-        </main>
+        <PatternProvider>
+          <Navbar />
+          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {children}
+          </main>
+        </PatternProvider>
       </body>
     </html>
   );
