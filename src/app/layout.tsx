@@ -5,7 +5,7 @@ import Navbar from '@/components/layout/Navbar';
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://contribute-theonepercentclub.web.app'),
   title: {
-    default: 'Club-Eve | Active Contribution & Integrity Evaluation Portal',
+    default: 'Club-Eve | Contribution',
     template: '%s | Club-Eve',
   },
   description: 'Interactive community evaluation, focus mode integrity monitoring, and voting platform for active contribution rounds.',
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: '/',
     siteName: 'Club-Eve',
-    title: 'Club-Eve | Active Contribution & Integrity Evaluation Portal',
+    title: 'Club-Eve | Contribution',
     description: 'Interactive community evaluation, focus mode integrity monitoring, and voting platform for active contribution rounds.',
     images: [
       {
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Club-Eve | Active Contribution & Integrity Evaluation Portal',
+    title: 'Club-Eve | Contribution',
     description: 'Interactive community evaluation, focus mode integrity monitoring, and voting platform for active contribution rounds.',
     images: ['/logo.png'],
   },
