@@ -99,7 +99,7 @@ export default function RoundManagerPanel({ rounds, adminEmail, onRoundsUpdated 
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-base font-black text-slate-900 uppercase tracking-tight">Evaluation Rounds</h2>
-          <p className="text-xs text-slate-500 font-mono mt-0.5">{rounds.length} round{rounds.length !== 1 ? 's' : ''} in Firestore</p>
+          <p className="text-xs text-slate-500 font-mono mt-0.5">{rounds.length} round{rounds.length !== 1 ? 's' : ''} available</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
