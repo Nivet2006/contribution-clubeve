@@ -19,6 +19,7 @@ const CONFIG_COLLECTION = 'admin_config';
 const DRAFTS_COLLECTION = 'drafts';
 const ROUNDS_COLLECTION = 'rounds';
 const POLLS_COLLECTION = 'polls';
+const POLL_VOTES_COLLECTION = 'poll_votes';
 
 // 1. Save Submission to Firestore
 export async function saveSubmissionToFirestore(submission: Submission): Promise<boolean> {
@@ -117,7 +118,32 @@ export async function saveDraftToFirestore(roundId: string, draftState: any): Pr
     });
     return true;
   } catch (err) {
-    console.warn('Firestore draft save fallback:', err);
+    console.warn('Firestore draft save error:', err);
+    return false;
+  }
+}
+
+export async function loadDraftFromFirestore(roundId: string): Promise<any | null> {
+  try {
+    const docRef = doc(db, DRAFTS_COLLECTION, roundId);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      return snap.data();
+    }
+    return null;
+  } catch (err) {
+    console.warn('Firestore draft load error:', err);
+    return null;
+  }
+}
+
+export async function clearDraftInFirestore(roundId: string): Promise<boolean> {
+  try {
+    const docRef = doc(db, DRAFTS_COLLECTION, roundId);
+    await deleteDoc(docRef);
+    return true;
+  } catch (err) {
+    console.warn('Firestore draft delete error:', err);
     return false;
   }
 }
@@ -361,7 +387,17 @@ export async function getPollById(pollId: string): Promise<Poll | null> {
   }
 }
 
-const POLL_VOTES_COLLECTION = 'poll_votes';
+export async function hasVoterVotedInFirestore(pollId: string, voterToken: string): Promise<boolean> {
+  try {
+    const voteDocId = `${pollId}_${voterToken}`;
+    const voteRef = doc(db, POLL_VOTES_COLLECTION, voteDocId);
+    const existingVote = await getDoc(voteRef);
+    return existingVote.exists();
+  } catch (err) {
+    console.warn('hasVoterVotedInFirestore error:', err);
+    return false;
+  }
+}
 
 // 17. Record a User Vote for a Poll with Single-Vote Enforcement
 export async function recordVoteInFirestore(

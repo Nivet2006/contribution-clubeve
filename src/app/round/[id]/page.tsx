@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { loadDraft, saveSubmission, getAdminConfig } from '@/lib/storage';
-import { getRoundById } from '@/lib/firestore-service';
+import { saveSubmission, getAdminConfig } from '@/lib/storage';
+import { getRoundById, loadDraftFromFirestore } from '@/lib/firestore-service';
 import { ensureAnonymousAuth } from '@/lib/firebase';
 import { FocusConfig, Round, Submission, ViolationLog } from '@/types/focus';
 import { getDeviceInfo, calculateFocusScore } from '@/lib/focus-engine';
@@ -50,7 +50,7 @@ export default function RoundPage() {
         setRound(data);
         setRemainingSeconds(data.durationMinutes * 60);
 
-        const draft = loadDraft(data.id);
+        const draft = await loadDraftFromFirestore(data.id);
         if (draft) {
           setAnswers(draft.answers || {});
           setRemainingSeconds(draft.remainingSeconds || data.durationMinutes * 60);

@@ -170,42 +170,19 @@ export interface DraftState {
 }
 
 export function saveDraft(roundId: string, state: DraftState) {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(DRAFT_PREFIX + roundId, JSON.stringify(state));
-    saveDraftToFirestore(roundId, state);
-  } catch (err) {
-    console.error('Failed to save local draft:', err);
-  }
+  saveDraftToFirestore(roundId, state);
 }
 
 export function loadDraft(roundId: string): DraftState | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = localStorage.getItem(DRAFT_PREFIX + roundId);
-    if (!raw) return null;
-    return JSON.parse(raw) as DraftState;
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 export function clearDraft(roundId: string) {
-  if (typeof window === 'undefined') return;
-  localStorage.removeItem(DRAFT_PREFIX + roundId);
+  // Cleared directly in Firestore when needed
 }
 
 export function getSubmissions(): Submission[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(SUBMISSIONS_KEY);
-    if (!raw) {
-      return [];
-    }
-    return JSON.parse(raw) as Submission[];
-  } catch {
-    return [];
-  }
+  return [];
 }
 
 export function saveSubmission(submission: Submission) {
@@ -214,33 +191,17 @@ export function saveSubmission(submission: Submission) {
 }
 
 export function deleteSelectedSubmissions(ids: string[]) {
-  if (typeof window === 'undefined') return;
-  const current = getSubmissions();
-  const filtered = current.filter((s) => !ids.includes(s.id));
-  localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(filtered));
+  // Managed via API / Firestore
 }
 
 export function clearAllSubmissions() {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify([]));
+  // Managed via API / Firestore
 }
 
 export function getAdminConfig(): FocusConfig {
-  if (typeof window === 'undefined') return DEFAULT_FOCUS_CONFIG;
-  try {
-    const raw = localStorage.getItem(CONFIG_KEY);
-    if (!raw) {
-      localStorage.setItem(CONFIG_KEY, JSON.stringify(DEFAULT_FOCUS_CONFIG));
-      return DEFAULT_FOCUS_CONFIG;
-    }
-    return { ...DEFAULT_FOCUS_CONFIG, ...JSON.parse(raw) };
-  } catch {
-    return DEFAULT_FOCUS_CONFIG;
-  }
+  return DEFAULT_FOCUS_CONFIG;
 }
 
 export function saveAdminConfig(config: FocusConfig) {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
   apiSaveConfig(config);
 }

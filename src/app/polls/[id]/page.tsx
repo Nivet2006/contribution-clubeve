@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, use } from 'react';
 import Link from 'next/link';
-import { getPollById, recordVoteInFirestore } from '@/lib/firestore-service';
+import { getPollById, recordVoteInFirestore, hasVoterVotedInFirestore } from '@/lib/firestore-service';
 import { ensureAnonymousAuth } from '@/lib/firebase';
 import { BotShield } from '@/lib/bot-shield';
 import { Poll } from '@/types/focus';
@@ -44,12 +44,10 @@ export default function PollDetailPage({ params }: PageProps) {
         setVoterToken(uid);
       }
 
-      // Check localStorage as a fast UI hint (actual enforcement is in Firestore rules)
-      if (typeof window !== 'undefined') {
-        const votedKey = `voted_poll_${pollId}`;
-        if (localStorage.getItem(votedKey)) {
-          setHasVoted(true);
-        }
+      // Check Firestore directly for voter status
+      if (uid && pollId) {
+        const voted = await hasVoterVotedInFirestore(pollId, uid);
+        if (voted) setHasVoted(true);
       }
     }
 
@@ -107,9 +105,6 @@ export default function PollDetailPage({ params }: PageProps) {
 
     if (res.success) {
       setHasVoted(true);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(`voted_poll_${poll.id}`, 'true');
-      }
       // Re-fetch updated vote counts
       const updated = await getPollById(poll.id);
       if (updated) setPoll(updated);
