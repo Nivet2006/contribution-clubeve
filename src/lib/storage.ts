@@ -49,7 +49,7 @@ export function handleFullscreenExit(
         options: [
           'A) Document.visibilityState & visibilitychange event',
           'B) Navigator.connection API',
-          'C) Window.localStorage sync API',
+          'C) Window storage synchronization API',
           'D) IntersectionObserver API',
         ],
       },
@@ -70,7 +70,7 @@ export function handleFullscreenExit(
         title: 'Question 1: Session Recovery Mechanism',
         description: 'Describe how local drafts and state snapshots can be recovered automatically after unexpected browser crashes.',
         type: 'text',
-        placeholder: 'Describe indexedDB/localStorage fallbacks...',
+        placeholder: 'Describe offline recovery fallback mechanisms...',
       },
       {
         id: 'q2',
