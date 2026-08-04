@@ -576,7 +576,7 @@ export default function IntegrityDashboard({
 
             <div className="space-y-3">
               <p className="text-xs text-slate-600 leading-relaxed font-sans font-semibold">
-                Warning: This action will <strong className="text-rose-600">permanently delete the {selectedIds.length} selected submission log{selectedIds.length !== 1 ? 's' : ''}</strong> from both local storage and cloud Firestore database. This action cannot be undone.
+                Warning: This action will <strong className="text-rose-600">permanently delete the {selectedIds.length} selected submission log{selectedIds.length !== 1 ? 's' : ''}</strong>. This action cannot be undone.
               </p>
 
               <div>
