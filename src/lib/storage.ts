@@ -210,17 +210,7 @@ export function getSubmissions(): Submission[] {
 }
 
 export function saveSubmission(submission: Submission) {
-  if (typeof window === 'undefined') return;
-  const current = getSubmissions();
-  const index = current.findIndex((s) => s.id === submission.id);
-  if (index >= 0) {
-    current[index] = submission;
-  } else {
-    current.unshift(submission);
-  }
-  localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(current));
-  
-  // Sync to Firebase Firestore cloud database
+  // Store directly to Firebase Firestore cloud database
   saveSubmissionToFirestore(submission);
 }
 

@@ -37,9 +37,21 @@ export default function IntegrityDashboard({
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'MANUAL_SUBMITTED' | 'AUTO_SUBMITTED'>('ALL');
   const [roundFilter, setRoundFilter] = useState<string>('ALL');
   const [syncSuccess, setSyncSuccess] = useState<boolean>(false);
+  const [localSyncing, setLocalSyncing] = useState<boolean>(false);
 
   const handleSyncClick = async () => {
-    await onRefreshData();
+    if (localSyncing || isSyncing) return;
+    setLocalSyncing(true);
+    setSyncSuccess(false);
+    try {
+      await onRefreshData();
+      // Ensure minimum spinning time so animation is clearly visible even on instant cached loads
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      setSyncSuccess(true);
+      setTimeout(() => setSyncSuccess(false), 2500);
+    } finally {
+      setLocalSyncing(false);
+    }
   };
 
   // Multi-selection state
@@ -167,11 +179,19 @@ export default function IntegrityDashboard({
         <div className="flex items-center space-x-3">
           <button
             onClick={handleSyncClick}
-            disabled={isSyncing}
-            className="flex items-center space-x-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-300 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all disabled:opacity-60"
+            disabled={isSyncing || localSyncing}
+            className={`flex items-center space-x-2 px-4 py-2.5 border rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all disabled:opacity-60 ${
+              syncSuccess
+                ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-900 border-slate-300'
+            }`}
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-[#003C5E]' : 'text-[#003C5E]'}`} />
-            <span>{isSyncing ? 'Syncing...' : 'Sync Data'}</span>
+            {syncSuccess ? (
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-600 animate-bounce" />
+            ) : (
+              <RefreshCw className={`w-3.5 h-3.5 text-[#003C5E] ${(isSyncing || localSyncing) ? 'animate-spin' : ''}`} />
+            )}
+            <span>{syncSuccess ? 'Synced!' : (isSyncing || localSyncing) ? 'Syncing...' : 'Sync Data'}</span>
           </button>
 
           <button

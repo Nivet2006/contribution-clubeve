@@ -93,13 +93,23 @@ export function subscribeToSubmissions(
 // 3.1 Fetch All Submissions from Firestore (One-shot manual sync)
 export async function fetchAllSubmissionsFromFirestore(): Promise<Submission[]> {
   try {
-    const q = query(collection(db, SUBMISSIONS_COLLECTION), orderBy('lastSaveTime', 'desc'));
+    const q = query(collection(db, SUBMISSIONS_COLLECTION));
     const snapshot = await getDocs(q);
     const list: Submission[] = [];
     snapshot.forEach((docSnap) => {
       list.push(docSnap.data() as Submission);
     });
-    return list;
+
+    if (list.length === 0) {
+      // Seed initial sample submissions to Firestore if empty
+      const { INITIAL_SUBMISSIONS } = await import('./storage');
+      for (const sub of INITIAL_SUBMISSIONS) {
+        await saveSubmissionToFirestore(sub);
+      }
+      return INITIAL_SUBMISSIONS;
+    }
+
+    return list.sort((a, b) => (b.lastSaveTime || 0) - (a.lastSaveTime || 0));
   } catch (err) {
     console.warn('fetchAllSubmissionsFromFirestore error:', err);
     return [];

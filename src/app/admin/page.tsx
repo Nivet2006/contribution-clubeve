@@ -20,17 +20,11 @@ export default function AdminPage() {
 
   const refreshData = async () => {
     setIsSyncing(true);
-    // 1. Load Local Storage fallback
-    const local = getSubmissions();
     setConfig(getAdminConfig());
 
-    // 2. Query Cloud Firestore directly
+    // Query Cloud Firestore directly
     const cloudSubs = await fetchAllSubmissionsFromFirestore();
-    if (cloudSubs.length > 0) {
-      setSubmissions(cloudSubs);
-    } else {
-      setSubmissions(local);
-    }
+    setSubmissions(cloudSubs);
     setIsSyncing(false);
   };
 
