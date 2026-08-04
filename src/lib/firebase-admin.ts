@@ -72,7 +72,7 @@ export async function verifyAdminToken(authHeader: string | null): Promise<{ uid
 }
 
 /** The admin email that is allowed to perform privileged operations */
-export const ADMIN_EMAIL = 'help@clubeve.nivet2006.in';
+export const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'help@clubeve.nivet2006.in';
 
 /**
  * Check if a verified token belongs to the admin user.

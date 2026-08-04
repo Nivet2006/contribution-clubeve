@@ -10,7 +10,7 @@ interface AdminLoginModalProps {
 }
 
 export default function AdminLoginModal({ onSignIn, authError }: AdminLoginModalProps) {
-  const [email, setEmail] = useState('help@clubeve.nivet2006.in');
+  const [email, setEmail] = useState(process.env.NEXT_PUBLIC_ADMIN_EMAIL || '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

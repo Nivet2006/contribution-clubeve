@@ -60,7 +60,8 @@ export default function RoundManagerPanel({ rounds, adminEmail, onRoundsUpdated 
 
   const handleConfirmOtpToggle = async () => {
     if (!otpModalRound) return;
-    if (otpPassword !== 'ClubEve@9X#Kz2!Secure2024' && otpPassword !== '123456') {
+    const validPassword = process.env.NEXT_PUBLIC_ADMIN_SECURITY_PASSWORD || 'ClubEve@9X#Kz2!Secure2024';
+    if (otpPassword !== validPassword && otpPassword !== '123456') {
       setOtpPasswordError('Incorrect admin security password.');
       return;
     }

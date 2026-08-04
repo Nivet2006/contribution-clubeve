@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 
 async function seedAdmin() {
   const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
-  const adminEmail = 'help@clubeve.nivet2006.in';
-  const adminPassword = 'ClubEve@9X#Kz2!Secure2024';
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'help@clubeve.nivet2006.in';
+  const adminPassword = process.env.ADMIN_SECURITY_PASSWORD || 'ClubEve@9X#Kz2!Secure2024';
 
   const res = await fetch(
     `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`,

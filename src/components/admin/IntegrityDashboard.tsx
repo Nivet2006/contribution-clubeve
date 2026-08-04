@@ -140,7 +140,8 @@ export default function IntegrityDashboard({
   };
 
   const handleConfirmPurgeSelected = async () => {
-    if (purgePassword !== 'ClubEve@9X#Kz2!Secure2024' && purgePassword !== '123456') {
+    const validPassword = process.env.NEXT_PUBLIC_ADMIN_SECURITY_PASSWORD || 'ClubEve@9X#Kz2!Secure2024';
+    if (purgePassword !== validPassword && purgePassword !== '123456') {
       setPurgeError('Incorrect admin password.');
       return;
     }
