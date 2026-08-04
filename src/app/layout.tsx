@@ -5,6 +5,11 @@ import Navbar from '@/components/layout/Navbar';
 export const metadata: Metadata = {
   title: 'Club-Eve | Collab',
   description: 'Mandatory Focus Mode and anti-cheating integrity monitoring platform for active contribution rounds.',
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({
