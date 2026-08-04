@@ -30,3 +30,6 @@ next-env.d.ts
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# markdown files
+*.md
