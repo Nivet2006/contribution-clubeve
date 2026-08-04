@@ -3,8 +3,49 @@ import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 
 export const metadata: Metadata = {
-  title: 'Club-Eve | Collab',
-  description: 'Mandatory Focus Mode and anti-cheating integrity monitoring platform for active contribution rounds.',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://contribute-theonepercentclub.web.app'),
+  title: {
+    default: 'Club-Eve | Active Contribution & Integrity Evaluation Portal',
+    template: '%s | Club-Eve',
+  },
+  description: 'Interactive community evaluation, focus mode integrity monitoring, and voting platform for active contribution rounds.',
+  keywords: ['Club-Eve', 'Contribution Portal', 'Community Evaluation', 'Focus Mode', 'Integrity Monitoring', 'Active Rounds'],
+  authors: [{ name: 'Club-Eve Team' }],
+  creator: 'Club-Eve',
+  publisher: 'Club-Eve',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: '/',
+    siteName: 'Club-Eve',
+    title: 'Club-Eve | Active Contribution & Integrity Evaluation Portal',
+    description: 'Interactive community evaluation, focus mode integrity monitoring, and voting platform for active contribution rounds.',
+    images: [
+      {
+        url: '/logo.png',
+        width: 1200,
+        height: 630,
+        alt: 'Club-Eve Logo',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Club-Eve | Active Contribution & Integrity Evaluation Portal',
+    description: 'Interactive community evaluation, focus mode integrity monitoring, and voting platform for active contribution rounds.',
+    images: ['/logo.png'],
+  },
   icons: {
     icon: '/logo.png',
     shortcut: '/logo.png',
