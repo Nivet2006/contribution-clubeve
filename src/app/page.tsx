@@ -38,7 +38,7 @@ export default function HomePage() {
               Active Evaluation Rounds
             </h2>
             <p className="text-xs text-slate-600 font-mono tracking-tight mt-1">
-              Select a round to initiate system pre-flight checks and accept rules
+              Select a round and proceed to start your evaluation session
             </p>
           </div>
         </div>
