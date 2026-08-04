@@ -73,52 +73,54 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-4">
             
             {/* Navigation Tabs */}
-            <div className="flex items-center space-x-1.5 bg-slate-100/90 p-1.5 rounded-xl border border-slate-300">
+            <div className="flex items-center space-x-1">
               <Link
                 href="/"
-                className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-bold tracking-wide transition-all ${
+                className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                   !isAdmin && !isPolls
-                    ? 'bg-[#003C5E] text-white shadow-sm'
-                    : 'text-slate-600 hover:text-black hover:bg-slate-200'
+                    ? 'bg-zinc-100 text-zinc-900 font-bold shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
                 }`}
               >
-                <UserCheck className="w-3.5 h-3.5" />
+                <UserCheck className="w-4 h-4 text-[#003C5E]" />
                 <span>Rounds</span>
               </Link>
 
               <Link
                 href="/polls"
-                className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-bold tracking-wide transition-all ${
+                className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                   isPolls
-                    ? 'bg-[#003C5E] text-white shadow-sm'
-                    : 'text-slate-600 hover:text-black hover:bg-slate-200'
+                    ? 'bg-zinc-100 text-zinc-900 font-bold shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
                 }`}
               >
-                <BarChart2 className="w-3.5 h-3.5 text-[#FFB703]" />
+                <BarChart2 className="w-4 h-4 text-[#FFB703]" />
                 <span>Polls</span>
               </Link>
 
               <Link
                 href="/admin"
-                className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-bold tracking-wide transition-all ${
+                className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                   isAdmin
-                    ? 'bg-[#007F6E] text-white shadow-sm'
-                    : 'text-slate-600 hover:text-black hover:bg-slate-200'
+                    ? 'bg-zinc-100 text-zinc-900 font-bold shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
                 }`}
               >
-                <Eye className="w-3.5 h-3.5" />
+                <Eye className="w-4 h-4 text-[#007F6E]" />
                 <span>Admin Portal</span>
               </Link>
             </div>
 
-            {/* Pattern Customizer */}
-            <div className="flex items-center space-x-1.5 bg-slate-100/90 px-2.5 py-1.5 rounded-xl border border-slate-300 text-xs">
-              <Layers className="w-3.5 h-3.5 text-[#003C5E]" />
-              <span className="text-[11px] font-mono text-slate-700 uppercase font-bold">Pattern:</span>
+            <div className="h-4 w-px bg-zinc-200" />
+
+            {/* Pattern Customizer Pill */}
+            <div className="flex items-center space-x-1.5 bg-zinc-50 px-3 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium">
+              <Layers className="w-4 h-4 text-[#003C5E]" />
+              <span className="text-xs font-mono text-zinc-700 uppercase font-semibold">Pattern:</span>
               <select
                 value={activePattern}
                 onChange={(e) => changePattern(e.target.value)}
-                className="bg-white text-slate-900 font-mono text-[11px] rounded-lg px-2 py-1 focus:outline-none border border-slate-300 cursor-pointer font-semibold"
+                className="bg-white text-zinc-900 font-mono text-xs rounded-md px-2 py-0.5 focus:outline-none border border-zinc-300 cursor-pointer font-medium"
               >
                 <option value="grid">Grid</option>
                 <option value="dots">Dots</option>
