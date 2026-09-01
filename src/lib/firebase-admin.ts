@@ -28,7 +28,6 @@ function initializeAdminApp(): App {
   try {
     let serviceAccount: any;
 
-    // Check if rawKey is base64 encoded
     const trimmed = rawKey.trim();
     if (!trimmed.startsWith('{') && !trimmed.startsWith('"')) {
       try {
@@ -39,6 +38,11 @@ function initializeAdminApp(): App {
       }
     } else {
       serviceAccount = JSON.parse(trimmed);
+    }
+
+    // If double-encoded stringified JSON
+    if (typeof serviceAccount === 'string') {
+      serviceAccount = JSON.parse(serviceAccount);
     }
 
     // Fix escaped newlines in private key if string formatted
