@@ -5,6 +5,40 @@ import { FieldValue } from 'firebase-admin/firestore';
 const ROUNDS_COLLECTION = 'rounds';
 
 /**
+ * GET /api/admin/rounds
+ * Fetch all rounds for admin dashboard. Requires admin authentication.
+ */
+export async function GET(request: Request) {
+  try {
+    const user = await verifyAdminToken(request.headers.get('Authorization'));
+    if (!isAdminUser(user)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized. Admin access required.', code: 'UNAUTHORIZED' },
+        { status: 401 }
+      );
+    }
+
+    const snapshot = await adminDb.collection(ROUNDS_COLLECTION).get();
+    const rounds = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return NextResponse.json({ success: true, data: rounds });
+  } catch (error: any) {
+    console.error('[API /api/admin/rounds GET Error]:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || 'Failed to fetch rounds due to an internal server error.',
+        code: 'INTERNAL_SERVER_ERROR',
+      },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * POST /api/admin/rounds
  * Create or update a round. Requires admin authentication.
  */
@@ -12,22 +46,63 @@ export async function POST(request: Request) {
   try {
     const user = await verifyAdminToken(request.headers.get('Authorization'));
     if (!isAdminUser(user)) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized. Admin access required.', code: 'UNAUTHORIZED' },
+        { status: 401 }
+      );
     }
 
-    const round = await request.json();
-
-    if (!round.id) {
-      return NextResponse.json({ success: false, message: 'Round ID is required' }, { status: 400 });
+    let round: any;
+    try {
+      round = await request.json();
+    } catch (parseErr) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid JSON request body.', code: 'BAD_REQUEST' },
+        { status: 400 }
+      );
     }
 
-    const docRef = adminDb.collection(ROUNDS_COLLECTION).doc(round.id);
-    await docRef.set({ ...round, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+    if (!round || typeof round !== 'object') {
+      return NextResponse.json(
+        { success: false, error: 'Request body must be a valid Round object.', code: 'BAD_REQUEST' },
+        { status: 400 }
+      );
+    }
 
-    return NextResponse.json({ success: true, message: 'Round saved successfully.' });
+    if (!round.id || typeof round.id !== 'string' || !round.id.trim()) {
+      return NextResponse.json(
+        { success: false, error: 'Round ID is required.', code: 'BAD_REQUEST' },
+        { status: 400 }
+      );
+    }
+
+    if (!round.title || typeof round.title !== 'string' || !round.title.trim()) {
+      return NextResponse.json(
+        { success: false, error: 'Round title is required.', code: 'BAD_REQUEST' },
+        { status: 400 }
+      );
+    }
+
+    // Clean undefined values to prevent Firestore serialisation errors
+    const cleanedRound = JSON.parse(JSON.stringify(round));
+
+    const docRef = adminDb.collection(ROUNDS_COLLECTION).doc(cleanedRound.id);
+    await docRef.set({ ...cleanedRound, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+
+    return NextResponse.json(
+      { success: true, message: 'Round saved successfully.', data: cleanedRound },
+      { status: 200 }
+    );
   } catch (error: any) {
-    console.error('Admin rounds POST error:', error);
-    return NextResponse.json({ success: false, message: error.message || 'Server error' }, { status: 500 });
+    console.error('[API /api/admin/rounds POST Error]:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || 'Failed to save round due to an internal server error.',
+        code: 'INTERNAL_SERVER_ERROR',
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -40,20 +115,47 @@ export async function DELETE(request: Request) {
   try {
     const user = await verifyAdminToken(request.headers.get('Authorization'));
     if (!isAdminUser(user)) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized. Admin access required.', code: 'UNAUTHORIZED' },
+        { status: 401 }
+      );
     }
 
-    const { roundId } = await request.json();
+    let body: any;
+    try {
+      body = await request.json();
+    } catch (parseErr) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid JSON request body.', code: 'BAD_REQUEST' },
+        { status: 400 }
+      );
+    }
 
-    if (!roundId) {
-      return NextResponse.json({ success: false, message: 'Round ID is required' }, { status: 400 });
+    const { roundId } = body || {};
+
+    if (!roundId || typeof roundId !== 'string' || !roundId.trim()) {
+      return NextResponse.json(
+        { success: false, error: 'Valid roundId is required for deletion.', code: 'BAD_REQUEST' },
+        { status: 400 }
+      );
     }
 
     await adminDb.collection(ROUNDS_COLLECTION).doc(roundId).delete();
 
-    return NextResponse.json({ success: true, message: 'Round deleted successfully.' });
+    return NextResponse.json(
+      { success: true, message: 'Round deleted successfully.' },
+      { status: 200 }
+    );
   } catch (error: any) {
-    console.error('Admin rounds DELETE error:', error);
-    return NextResponse.json({ success: false, message: error.message || 'Server error' }, { status: 500 });
+    console.error('[API /api/admin/rounds DELETE Error]:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || 'Failed to delete round due to an internal server error.',
+        code: 'INTERNAL_SERVER_ERROR',
+      },
+      { status: 500 }
+    );
   }
 }
+

@@ -6,42 +6,67 @@ import { getAuth, Auth } from 'firebase-admin/auth';
  * Firebase Admin SDK — Server-Side Only
  *
  * This module initializes the Firebase Admin SDK using a service account key
- * stored in the FIREBASE_SERVICE_ACCOUNT_KEY environment variable (JSON string).
- *
- * The Admin SDK bypasses all Firestore Security Rules, so it should ONLY be
- * used inside Next.js API routes (server-side), never imported by client code.
+ * stored in the FIREBASE_SERVICE_ACCOUNT_KEY environment variable.
  */
 
 let adminApp: App;
 
-function getAdminApp(): App {
+function initializeAdminApp(): App {
   if (getApps().length > 0) {
     return getApps()[0];
   }
 
-  const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+  const rawKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 
-  if (serviceAccountKey) {
-    try {
-      const serviceAccount = JSON.parse(serviceAccountKey);
-      adminApp = initializeApp({
-        credential: cert(serviceAccount),
-        projectId: serviceAccount.project_id,
-      });
-    } catch (err) {
-      console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY:', err);
-      // Fallback to application default credentials
-      adminApp = initializeApp({
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      });
-    }
-  } else {
-    // Development fallback: use project ID only
-    adminApp = initializeApp({
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  if (!rawKey) {
+    console.warn('[Firebase Admin] FIREBASE_SERVICE_ACCOUNT_KEY is missing. Falling back to default project credentials.');
+    return initializeApp({
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'contribute-theonepercentclub',
     });
   }
 
+  try {
+    let serviceAccount: any;
+
+    // Check if rawKey is base64 encoded
+    const trimmed = rawKey.trim();
+    if (!trimmed.startsWith('{') && !trimmed.startsWith('"')) {
+      try {
+        const decoded = Buffer.from(trimmed, 'base64').toString('utf8');
+        serviceAccount = JSON.parse(decoded);
+      } catch (b64Err) {
+        serviceAccount = JSON.parse(trimmed);
+      }
+    } else {
+      serviceAccount = JSON.parse(trimmed);
+    }
+
+    // Fix escaped newlines in private key if string formatted
+    if (typeof serviceAccount.private_key === 'string') {
+      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+    }
+
+    // Validate essential service account fields
+    if (!serviceAccount.project_id || !serviceAccount.client_email || !serviceAccount.private_key) {
+      throw new Error('Service account key is missing required fields (project_id, client_email, or private_key).');
+    }
+
+    return initializeApp({
+      credential: cert(serviceAccount),
+      projectId: serviceAccount.project_id,
+    });
+  } catch (err: any) {
+    console.error('[Firebase Admin] Failed to parse service account key:', err.message);
+    return initializeApp({
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'contribute-theonepercentclub',
+    });
+  }
+}
+
+function getAdminApp(): App {
+  if (!adminApp) {
+    adminApp = initializeAdminApp();
+  }
   return adminApp;
 }
 
@@ -65,8 +90,8 @@ export async function verifyAdminToken(authHeader: string | null): Promise<{ uid
   try {
     const decoded = await adminAuth.verifyIdToken(idToken);
     return { uid: decoded.uid, email: decoded.email };
-  } catch (err) {
-    console.warn('Admin token verification failed:', err);
+  } catch (err: any) {
+    console.warn('[Firebase Admin] Token verification failed:', err.message);
     return null;
   }
 }
@@ -79,5 +104,6 @@ export const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'help@clubeve.
  */
 export function isAdminUser(decodedUser: { uid: string; email?: string } | null): boolean {
   if (!decodedUser || !decodedUser.email) return false;
-  return decodedUser.email === ADMIN_EMAIL;
+  return decodedUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 }
+
