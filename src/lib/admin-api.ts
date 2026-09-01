@@ -22,6 +22,15 @@ async function adminFetch(url: string, options: RequestInit = {}): Promise<any> 
     },
   });
 
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    const text = await res.text();
+    return {
+      success: false,
+      message: `Server returned non-JSON response (${res.status}): ${text.slice(0, 150)}...`,
+    };
+  }
+
   return res.json();
 }
 
